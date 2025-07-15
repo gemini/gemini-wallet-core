@@ -58,26 +58,18 @@ export interface ConnectResponse extends GeminiSdkMessageResponse {
 }
 
 export interface SendTransactionResponse extends GeminiSdkMessageResponse {
-  hash?: Hex;
-  error?: string;
   data?: { hash?: Hex; error?: string };
 }
 
 export interface SignMessageResponse extends GeminiSdkMessageResponse {
-  hash?: Hex;
-  error?: string;
   data?: { hash?: Hex; error?: string };
 }
 
 export interface SignTypedDataResponse extends GeminiSdkMessageResponse {
-  hash?: Hex;
-  error?: string;
   data?: { hash?: Hex; error?: string };
 }
 
 export interface SwitchChainResponse extends GeminiSdkMessageResponse {
-  chainId?: number;
-  error?: string;
   data?: { chainId?: number; error?: string };
 }
 
@@ -90,8 +82,6 @@ export interface GeminiSdkSendTransaction extends GeminiSdkMessage {
     data?: Hex;
     gas?: string;
     gasPrice?: string;
-    maxFeePerGas?: string;
-    maxPriorityFeePerGas?: string;
   };
 }
 
@@ -99,7 +89,7 @@ export interface GeminiSdkSignMessage extends GeminiSdkMessage {
   event: GeminiSdkEvent.SDK_SIGN_DATA;
   data: {
     account: Address;
-    message: string | Hex;
+    message: string;
   };
 }
 
@@ -107,18 +97,26 @@ export interface GeminiSdkSignTypedData extends GeminiSdkMessage {
   event: GeminiSdkEvent.SDK_SIGN_TYPED_DATA;
   data: {
     account: Address;
-    domain: unknown;
-    types: unknown;
+    domain: any;
+    types: any;
     primaryType: string;
-    message: unknown;
+    message: any;
   };
 }
 
 export interface GeminiSdkSwitchChain extends GeminiSdkMessage {
   event: GeminiSdkEvent.SDK_SWITCH_CHAIN;
   data: {
-    chainId: number;
+    id: number;
   };
+}
+
+export interface GeminiSdkConnectMessage extends GeminiSdkMessage {
+  event: GeminiSdkEvent.SDK_CONNECT;
+}
+
+export interface GeminiSdkDisconnectMessage extends GeminiSdkMessage {
+  event: GeminiSdkEvent.SDK_DISCONNECT;
 }
 
 export interface GeminiSdkAppContextMessage extends GeminiSdkMessage {
