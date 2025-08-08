@@ -1,13 +1,11 @@
-export { openPopup, closePopup } from "./popup";
-export { 
-  encodeBase64, 
-  decodeBase64, 
-  bufferToBase64URLString, 
-  utf8StringToBuffer, 
-  base64ToHex 
+export {
+  base64ToHex,
+  bufferToBase64URLString,
+  decodeBase64,
+  encodeBase64,
+  utf8StringToBuffer,
 } from "./base64";
+export { closePopup, openPopup } from "./popup";
 export { hexStringFromNumber, safeJsonStringify } from "./strings";
 
-export const generateRequestId = (): string => {
-  return crypto.randomUUID();
-};
+export const generateRequestId = (): string => crypto.randomUUID();

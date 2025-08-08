@@ -1,7 +1,7 @@
 /**
  * Interface for storage backends used by the Gemini wallet SDK
  */
-export interface IStorage {
+export type IStorage = {
   /**
    * Store a serializable object in storage
    * @param key Storage key
@@ -29,14 +29,14 @@ export interface IStorage {
    * @param key Storage key
    * @returns The stored string or null if not found
    */
-  getItem(key: string): Promise<string | null>;
+  getItem(key: string): Promise<string | undefined>;
 
   /**
    * Remove an item from storage
    * @param key Storage key
    */
   removeItem(key: string): Promise<void>;
-}
+};
 
 // Export storage keys
 export const STORAGE_ETH_ACCOUNTS_KEY = "eth-accounts";

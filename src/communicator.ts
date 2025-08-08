@@ -80,7 +80,7 @@ export class Communicator {
    * Closes the popup, rejects all pending requests and clears event listeners
    */
   private onRequestCancelled(): void {
-    closePopup(this.popup);
+    closePopup(this.popup ?? undefined);
     this.popup = null;
 
     this.listeners.forEach(({ reject }, listener) => {

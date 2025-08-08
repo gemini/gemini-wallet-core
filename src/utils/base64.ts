@@ -46,15 +46,16 @@ export function decodeBase64(base64url: string): Uint8Array {
   if (typeof Buffer !== "undefined") {
     // Node.js environment
     return new Uint8Array(Buffer.from(base64, "base64"));
-  } else {
-    // Browser environment
-    const binaryString = atob(base64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes;
   }
+
+  // Browser environment
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  return bytes;
 }
 
 /**
@@ -62,7 +63,9 @@ export function decodeBase64(base64url: string): Uint8Array {
  * @param buffer - The buffer to convert
  * @returns The base64url encoded string
  */
-export function bufferToBase64URLString(buffer: ArrayBuffer | Uint8Array): string {
+export function bufferToBase64URLString(
+  buffer: ArrayBuffer | Uint8Array,
+): string {
   const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
   return encodeBase64(bytes);
 }
@@ -76,17 +79,20 @@ export function utf8StringToBuffer(value: string): Uint8Array {
   if (typeof TextEncoder !== "undefined") {
     // Modern browsers and Node.js with TextEncoder support
     return new TextEncoder().encode(value);
-  } else if (typeof Buffer !== "undefined") {
+  }
+
+  if (typeof Buffer !== "undefined") {
     // Node.js fallback
     return new Uint8Array(Buffer.from(value, "utf8"));
-  } else {
-    // Very old browsers fallback (not recommended)
-    const bytes = new Uint8Array(value.length);
-    for (let i = 0; i < value.length; i++) {
-      bytes[i] = value.charCodeAt(i);
-    }
-    return bytes;
   }
+
+  // Very old browsers fallback (not recommended)
+  const bytes = new Uint8Array(value.length);
+  for (let i = 0; i < value.length; i++) {
+    bytes[i] = value.charCodeAt(i);
+  }
+
+  return bytes;
 }
 
 /**

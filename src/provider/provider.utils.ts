@@ -1,7 +1,6 @@
-import { rpcErrors } from "@metamask/rpc-errors";
 import { isHex, type TransactionRequest } from "viem";
-
 import type { RpcRequestArgs } from "@/types";
+import { rpcErrors } from "@metamask/rpc-errors";
 
 /**
  * Calls the RPC with a given request
@@ -9,7 +8,10 @@ import type { RpcRequestArgs } from "@/types";
  * @param rpcUrl The url of the RPC.
  * @returns Response from the RPC call.
  */
-export const fetchRpcRequest = async (request: RpcRequestArgs, rpcUrl: string) => {
+export const fetchRpcRequest = async (
+  request: RpcRequestArgs,
+  rpcUrl: string,
+) => {
   const requestBody = {
     ...request,
     id: window?.crypto?.randomUUID(),
@@ -24,7 +26,10 @@ export const fetchRpcRequest = async (request: RpcRequestArgs, rpcUrl: string) =
     mode: "cors",
   });
   const { result, error } = await res.json();
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
+
   return result;
 };
 
@@ -34,7 +39,9 @@ export const fetchRpcRequest = async (request: RpcRequestArgs, rpcUrl: string) =
  * @param args The request arguments to validate.
  * @returns An error object if the arguments are invalid, otherwise undefined.
  */
-export function validateRpcRequestArgs(args: unknown): asserts args is RpcRequestArgs {
+export function validateRpcRequestArgs(
+  args: unknown,
+): asserts args is RpcRequestArgs {
   if (!args || typeof args !== "object" || Array.isArray(args)) {
     throw rpcErrors.invalidParams({
       message: "Expected a single, non-array, object argument.",
@@ -49,7 +56,11 @@ export function validateRpcRequestArgs(args: unknown): asserts args is RpcReques
     });
   }
 
-  if (params !== undefined && !Array.isArray(params) && (typeof params !== "object" || params === null)) {
+  if (
+    params !== undefined &&
+    !Array.isArray(params) &&
+    (typeof params !== "object" || params === null)
+  ) {
     throw rpcErrors.invalidParams({
       message: "'args.params' must be an object or array if provided.",
     });
@@ -61,20 +72,29 @@ export function validateRpcRequestArgs(args: unknown): asserts args is RpcReques
  * @param tx The raw transaction request object.
  * @returns The raw transaction object with certain fields converted to BigInts
  */
-export function convertSendValuesToBigInt(tx: TransactionRequest): TransactionRequest {
-  const FIELDS_TO_NORMALIZE: (keyof Pick<
-    TransactionRequest,
-    "value" | "gas" | "gasPrice" | "maxPriorityFeePerGas" | "maxFeePerGas"
-  >)[] = ["value", "gas", "gasPrice", "maxPriorityFeePerGas", "maxFeePerGas"];
+export function convertSendValuesToBigInt(
+  tx: TransactionRequest,
+): TransactionRequest {
+  const FIELDS_TO_NORMALIZE: Array<
+    keyof Pick<
+      TransactionRequest,
+      "value" | "gas" | "gasPrice" | "maxPriorityFeePerGas" | "maxFeePerGas"
+    >
+  > = ["value", "gas", "gasPrice", "maxPriorityFeePerGas", "maxFeePerGas"];
 
   const normalized = { ...tx };
 
   for (const field of FIELDS_TO_NORMALIZE) {
-    if (!(field in tx)) continue;
+    if (!(field in tx)) {
+      continue;
+    }
 
     const value = tx[field];
 
-    if (typeof value === "bigint") continue;
+    if (typeof value === "bigint") {
+      continue;
+    }
+
     if (isHex(value)) {
       normalized[field] = BigInt(value);
     }
