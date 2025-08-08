@@ -1,4 +1,7 @@
-import type { Address, Hex } from "viem";
+import { EventEmitter } from "eventemitter3";
+import type { Address, Hex, SignMessageParameters, SignTypedDataParameters, TransactionRequest } from "viem";
+
+import { type IStorage } from "./storage/storageInterface";
 
 export enum GeminiSdkEvent {
   // Popup events
@@ -36,90 +39,101 @@ export interface Chain {
   rpcUrl?: string;
 }
 
-export interface GeminiSdkMessage {
-  event: GeminiSdkEvent;
-  requestId: string;
-  chainId: number;
-  origin: string;
+export enum PlatformType {
+  WEB = "WEB",
+  REACT_NATIVE = "REACT_NATIVE",
+}
+
+export type GeminiProviderConfig = {
+  appMetadata: AppMetadata;
+  chain: Chain;
+  platform?: PlatformType;
+  onDisconnectCallback?: () => void;
+  storage?: IStorage;
+};
+
+export interface RpcRequestArgs {
+  readonly method: string;
+  readonly params?: readonly unknown[] | object | Hex[];
+}
+
+export interface ProviderRpcError extends Error {
+  code: number;
   data?: unknown;
+  message: string;
+}
+
+export type ProviderEventMap = {
+  accountsChanged: string[];
+  chainChanged: string; // hex string
+  connect: {
+    readonly chainId: string;
+  };
+  disconnect: ProviderRpcError;
+};
+
+export type ProviderEventCallback = ProviderInterface["emit"];
+
+export class ProviderEventEmitter extends EventEmitter<keyof ProviderEventMap> {}
+
+export interface ProviderInterface extends ProviderEventEmitter {
+  disconnect(): Promise<void>;
+  emit<K extends keyof ProviderEventMap>(event: K, ...args: [ProviderEventMap[K]]): boolean;
+  on<K extends keyof ProviderEventMap>(event: K, listener: (_: ProviderEventMap[K]) => void): this;
+  request(args: RpcRequestArgs): Promise<any>;
+}
+
+export interface GeminiSdkMessage {
+  chainId: number;
+  data?: unknown;
+  event: GeminiSdkEvent;
+  origin: string;
+  requestId?: string;
   wcData?: any;
 }
 
-export interface GeminiSdkMessageResponse extends GeminiSdkMessage {
-  error?: string;
+export interface GeminiSdkMessageResponse {
   data?: unknown;
+  event: GeminiSdkEvent;
+  requestId?: string;
 }
 
-export interface ConnectResponse extends GeminiSdkMessageResponse {
-  data: {
-    address: Address;
-    chainId: number;
-  };
+export interface ConnectResponse extends Omit<GeminiSdkMessageResponse, "data"> {
+  data: { address: Address };
 }
 
-export interface SendTransactionResponse extends GeminiSdkMessageResponse {
-  data?: { hash?: Hex; error?: string };
+export interface SendTransactionResponse extends Omit<GeminiSdkMessageResponse, "data"> {
+  data: { hash?: Hex; error?: string };
 }
 
-export interface SignMessageResponse extends GeminiSdkMessageResponse {
-  data?: { hash?: Hex; error?: string };
+export interface SignMessageResponse extends Omit<GeminiSdkMessageResponse, "data"> {
+  data: { hash?: Hex; error?: string };
 }
 
-export interface SignTypedDataResponse extends GeminiSdkMessageResponse {
-  data?: { hash?: Hex; error?: string };
+export interface SignTypedDataResponse extends Omit<GeminiSdkMessageResponse, "data"> {
+  data: { hash?: Hex; error?: string };
 }
 
-export interface SwitchChainResponse extends GeminiSdkMessageResponse {
-  data?: { chainId?: number; error?: string };
+export interface SwitchChainResponse extends Omit<GeminiSdkMessageResponse, "data"> {
+  data: { chainId?: number; error?: string };
 }
 
-export interface GeminiSdkSendTransaction extends GeminiSdkMessage {
-  event: GeminiSdkEvent.SDK_SEND_TRANSACTION;
-  data: {
-    from: Address;
-    to?: Address;
-    value?: string;
-    data?: Hex;
-    gas?: string;
-    gasPrice?: string;
-  };
+export interface GeminiSdkSendTransaction extends Omit<GeminiSdkMessage, "data"> {
+  data: TransactionRequest;
 }
 
-export interface GeminiSdkSignMessage extends GeminiSdkMessage {
-  event: GeminiSdkEvent.SDK_SIGN_DATA;
-  data: {
-    account: Address;
-    message: string;
-  };
+export interface GeminiSdkSignMessage extends Omit<GeminiSdkMessage, "data"> {
+  data: SignMessageParameters;
 }
 
-export interface GeminiSdkSignTypedData extends GeminiSdkMessage {
-  event: GeminiSdkEvent.SDK_SIGN_TYPED_DATA;
-  data: {
-    account: Address;
-    domain: any;
-    types: any;
-    primaryType: string;
-    message: any;
-  };
+export interface GeminiSdkSignTypedData extends Omit<GeminiSdkMessage, "data"> {
+  data: SignTypedDataParameters;
 }
 
-export interface GeminiSdkSwitchChain extends GeminiSdkMessage {
-  event: GeminiSdkEvent.SDK_SWITCH_CHAIN;
-  data: {
-    id: number;
-  };
+export interface GeminiSdkSwitchChain extends Omit<GeminiSdkMessage, "data"> {
+  data: number;
 }
 
-export interface GeminiSdkConnectMessage extends GeminiSdkMessage {
-  event: GeminiSdkEvent.SDK_CONNECT;
-}
-
-export interface GeminiSdkDisconnectMessage extends GeminiSdkMessage {
-  event: GeminiSdkEvent.SDK_DISCONNECT;
-}
-
-export interface GeminiSdkAppContextMessage extends GeminiSdkMessage {
-  event: GeminiSdkEvent.POPUP_APP_CONTEXT;
+export interface GeminiSdkAppContextMessage extends Omit<GeminiSdkMessage, "data"> {
   data: AppContext;
 }
