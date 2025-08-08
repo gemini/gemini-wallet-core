@@ -1,9 +1,8 @@
 {
   "name": "@gemini-wallet/core",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Core SDK for Gemini Wallet integration with popup communication",
   "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "type": "module",
   "repository": {
@@ -25,18 +24,18 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
+      "import": "./dist/index.js",
       "require": "./dist/index.js"
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
-    "lint": "eslint ./src",
-    "lint:fix": "eslint ./src --fix",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "build": "rm -rf dist && bun build src/index.ts --outdir dist --target node --format esm && tsc --emitDeclarationOnly --declaration --declarationMap --outDir dist",
+    "dev": "bun build src/index.ts --outdir dist --target node --format esm --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/**/*.{ts,tsx}",
+    "lint:fix": "eslint src/**/*.{ts,tsx} --fix",
+    "test": "bun test",
+    "test:watch": "bun test --watch"
   },
   "dependencies": {
     "@metamask/rpc-errors": "7.0.2",
@@ -44,11 +43,8 @@
   },
   "devDependencies": {
     "@types/node": "^20.14.9",
-    "@vitest/coverage-v8": "^2.0.5",
     "eslint": "^8.57.0",
-    "tsup": "^8.4.0",
-    "typescript": "^5.5.3",
-    "vitest": "^2.0.5"
+    "typescript": "^5.5.3"
   },
   "peerDependencies": {
     "viem": ">=2.0.0"
