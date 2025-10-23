@@ -36,25 +36,25 @@ pnpm add @gemini-wallet/core
 **For most applications, you should use Wagmi's built-in Gemini connector instead:**
 
 ```typescript
-import { gemini } from 'wagmi/connectors';
-import { createConfig } from 'wagmi';
+import { gemini } from "wagmi/connectors";
+import { createConfig } from "wagmi";
 
 const config = createConfig({
   connectors: [
     gemini({
       appMetadata: {
-        name: 'My DApp',
-        url: 'https://mydapp.com',
-      }
-    })
+        name: "My DApp",
+        url: "https://mydapp.com",
+      },
+    }),
   ],
   // ... rest of wagmi config
 });
 ```
 
-> 🎯 **Wagmi Integration**: Gemini Wallet is available as a default connector in Wagmi v2.x+  
-> 📚 **Wagmi Docs**: [wagmi.sh/connectors/gemini](https://wagmi.sh/connectors/gemini)  
-> ⭐ **Status**: Currently in PR review - will be available soon!
+> 🎯 **Wagmi Integration**: Gemini Wallet is available as a default connector in wagmi@2.16.3+ & @wagmi/connectors@5.9.3+
+> 📚 **Wagmi Docs**: [https://wagmi.sh/core/api/connectors/gemini](https://wagmi.sh/core/api/connectors/gemini)  
+> ⭐ **Status**: Readily available
 
 ## Usage
 
@@ -65,34 +65,36 @@ This core SDK provides multiple integration levels for advanced use cases:
 Use when you need direct provider access or aren't using Wagmi:
 
 ```typescript
-import { GeminiWalletProvider } from '@gemini-wallet/core';
+import { GeminiWalletProvider } from "@gemini-wallet/core";
 
 const provider = new GeminiWalletProvider({
   appMetadata: {
-    name: 'My DApp',
-    url: 'https://mydapp.com'
+    name: "My DApp",
+    url: "https://mydapp.com",
   },
   chain: { id: 42161 }, // Arbitrum One
 });
 
 // Connect and get accounts
-const accounts = await provider.request({ 
-  method: 'eth_requestAccounts' 
+const accounts = await provider.request({
+  method: "eth_requestAccounts",
 });
 
 // Send transaction
 const txHash = await provider.request({
-  method: 'eth_sendTransaction',
-  params: [{
-    from: accounts[0],
-    to: '0x742E4C3B7dcD26e7Ca95C0Ad2F38C61f6F02C4c0',
-    value: '0x38D7EA4C68000', // 0.001 ETH
-  }]
+  method: "eth_sendTransaction",
+  params: [
+    {
+      from: accounts[0],
+      to: "0x742E4C3B7dcD26e7Ca95C0Ad2F38C61f6F02C4c0",
+      value: "0x38D7EA4C68000", // 0.001 ETH
+    },
+  ],
 });
 
 // Listen for events
-provider.on('accountsChanged', (accounts) => {
-  console.log('Accounts changed:', accounts);
+provider.on("accountsChanged", (accounts) => {
+  console.log("Accounts changed:", accounts);
 });
 ```
 
@@ -101,14 +103,14 @@ provider.on('accountsChanged', (accounts) => {
 Use the wallet class for fine-grained control:
 
 ```typescript
-import { GeminiWallet } from '@gemini-wallet/core';
+import { GeminiWallet } from "@gemini-wallet/core";
 
 const wallet = new GeminiWallet({
   appMetadata: {
-    name: 'My DApp',
-    url: 'https://mydapp.com'
+    name: "My DApp",
+    url: "https://mydapp.com",
   },
-  chain: { id: 42161 }
+  chain: { id: 42161 },
 });
 
 // Connect
@@ -116,14 +118,14 @@ const accounts = await wallet.connect();
 
 // Send transaction with error handling
 const result = await wallet.sendTransaction({
-  to: '0x742E4C3B7dcD26e7Ca95C0Ad2F38C61f6F02C4c0',
-  value: '1000000000000000000', // 1 ETH in wei
+  to: "0x742E4C3B7dcD26e7Ca95C0Ad2F38C61f6F02C4c0",
+  value: "1000000000000000000", // 1 ETH in wei
 });
 
 if (result.error) {
-  console.error('Transaction failed:', result.error);
+  console.error("Transaction failed:", result.error);
 } else {
-  console.log('Transaction hash:', result.hash);
+  console.log("Transaction hash:", result.hash);
 }
 ```
 
@@ -132,13 +134,13 @@ if (result.error) {
 For maximum control over the popup communication:
 
 ```typescript
-import { Communicator, GeminiSdkEvent } from '@gemini-wallet/core';
+import { Communicator, GeminiSdkEvent } from "@gemini-wallet/core";
 
 const communicator = new Communicator({
   appMetadata: {
-    name: 'My DApp',
-    url: 'https://mydapp.com'
-  }
+    name: "My DApp",
+    url: "https://mydapp.com",
+  },
 });
 
 // Send connect request
@@ -146,17 +148,17 @@ const response = await communicator.postRequestAndWaitForResponse({
   event: GeminiSdkEvent.SDK_CONNECT,
   requestId: crypto.randomUUID(),
   chainId: 42161,
-  origin: window.location.origin
+  origin: window.location.origin,
 });
 
-console.log('Connected address:', response.data.address);
+console.log("Connected address:", response.data.address);
 
 // Listen for specific events
-communicator.onMessage(
-  (message) => message.event === GeminiSdkEvent.SDK_DISCONNECT
-).then(() => {
-  console.log('User disconnected');
-});
+communicator
+  .onMessage((message) => message.event === GeminiSdkEvent.SDK_DISCONNECT)
+  .then(() => {
+    console.log("User disconnected");
+  });
 ```
 
 ## API Reference
@@ -183,7 +185,7 @@ interface GeminiProviderConfig {
 #### Events
 
 - `accountsChanged` - Emitted when accounts change
-- `chainChanged` - Emitted when chain changes  
+- `chainChanged` - Emitted when chain changes
 - `connect` - Emitted on connection
 - `disconnect` - Emitted on disconnection
 
@@ -265,6 +267,7 @@ Enumeration of all supported events:
 Gemini Wallet supports the following networks:
 
 **Mainnets:**
+
 - Ethereum (1)
 - Arbitrum One (42161) - Default
 - OP Mainnet (10)
@@ -272,6 +275,7 @@ Gemini Wallet supports the following networks:
 - Polygon (137)
 
 **Testnets:**
+
 - Sepolia (11155111)
 - Arbitrum Sepolia (421614)
 - OP Sepolia (11155420)
@@ -309,8 +313,9 @@ Experience Gemini Wallet in action:
 ## Integration Examples
 
 The core SDK enables various integration patterns:
+
 - ✅ EIP-1193 compatible provider for any web3 library
-- ✅ Custom storage implementations for mobile platforms  
+- ✅ Custom storage implementations for mobile platforms
 - ✅ Event-driven architecture with TypeScript support
 - ✅ Multi-chain support with automatic chain switching
 - ✅ Error handling with user-friendly error messages
@@ -354,6 +359,7 @@ bun run dev
 ### Build Output
 
 The build process generates:
+
 - `dist/index.js` - ESM bundle for Node.js
 - `dist/index.d.ts` - TypeScript declarations
 - `dist/*.d.ts.map` - Source maps for declarations
