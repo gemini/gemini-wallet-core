@@ -24,6 +24,6 @@ jobs:
 
     steps:
       # Fetch project source with GitHub Actions Checkout. Use either v3 or v4.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955  # v4.3.0
       # Run the "semgrep scan" command on the command line of the docker image.
       - run: semgrep scan --config auto
