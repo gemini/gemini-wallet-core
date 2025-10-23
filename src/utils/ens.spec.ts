@@ -47,7 +47,7 @@ describe("ENS utilities", () => {
 
         // The API might return mike.gemini.eth or null depending on availability
         // We'll accept both outcomes for a robust test
-        expect(result.address).toBe(realAddress);
+        expect(result.address.toLowerCase()).toBe(realAddress.toLowerCase());
         expect(result.name).toBeDefined(); // Could be "mike.gemini.eth" or null
 
         // If the API returned a name, it should be mike.gemini.eth
