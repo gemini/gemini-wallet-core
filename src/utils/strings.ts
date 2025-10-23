@@ -3,4 +3,8 @@ export const hexStringFromNumber = (num: number): string => {
 };
 
 export const safeJsonStringify = (obj: any) =>
-  JSON.stringify(obj, (_, value) => (typeof value === "bigint" ? value.toString() + "n" : value), 2);
+  JSON.stringify(
+    obj,
+    (_, value) => (typeof value === "bigint" ? value.toString() + "n" : value),
+    2,
+  );

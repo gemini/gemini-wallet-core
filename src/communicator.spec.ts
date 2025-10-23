@@ -1,101 +1,503 @@
-import { DEFAULT_CHAIN_ID } from "@repo/contract";
-import { vi } from "vitest";
+import { providerErrors } from "@metamask/rpc-errors";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+  spyOn,
+} from "bun:test";
 
 import { Communicator } from "./communicator";
+import { DEFAULT_CHAIN_ID } from "./constants";
+import {
+  AppMetadata,
+  GeminiSdkEvent,
+  GeminiSdkMessage,
+  GeminiSdkMessageResponse,
+} from "./types";
+import { SDK_BACKEND_URL, SDK_VERSION } from "./utils";
 
-import { GeminiSdkEvent } from "@/types";
-import { openPopup, SDK_BACKEND_URL } from "@/utils";
+// Set up global window mock before tests
+(global as any).window = {
+  addEventListener: () => {},
+  location: {
+    origin: "http://localhost:3000",
+  },
+  removeEventListener: () => {},
+};
 
-vi.mock("@/utils", () => ({
-  SDK_BACKEND_URL: "https://mock-backend.com",
-  SDK_VERSION: "0.0.1",
-  closePopup: vi.fn(),
-  openPopup: vi.fn(
-    () =>
-      ({
-        closed: false,
-        focus: vi.fn(),
-        postMessage: vi.fn(),
-      }) as unknown as Window,
-  ),
+// Mock window.open
+const mockPopup = {
+  closed: false,
+  focus: mock(),
+  location: { href: SDK_BACKEND_URL },
+  postMessage: mock(),
+};
+
+// Mock utils
+mock.module("./utils", () => ({
+  SDK_BACKEND_URL,
+  SDK_VERSION: "1.0.0",
+  closePopup: mock(),
+  openPopup: mock(() => mockPopup),
 }));
-
-const mockRequestId = "11111111-2222-3333-4444-555555555555";
 
 describe("Communicator", () => {
   let communicator: Communicator;
+  let appMetadata: AppMetadata;
+  let onDisconnectCallback: ReturnType<typeof mock>;
+  let messageListeners: Array<(event: MessageEvent) => void> = [];
+
+  // Helper to simulate message events
+  const simulateMessage = (
+    data: any,
+    origin: string = new URL(SDK_BACKEND_URL).origin,
+  ) => {
+    const event = new MessageEvent("message", { data, origin });
+    messageListeners.forEach((listener) => listener(event));
+  };
 
   beforeEach(() => {
+    // Reset mocks
+    mock.restore();
+    messageListeners = [];
+    mockPopup.postMessage.mockClear();
+    mockPopup.focus.mockClear();
+    mockPopup.closed = false;
+
+    // Mock window event listeners
+    spyOn(window, "addEventListener").mockImplementation(
+      (event: string, listener: any) => {
+        if (event === "message") {
+          messageListeners.push(listener);
+        }
+      },
+    );
+
+    spyOn(window, "removeEventListener").mockImplementation(
+      (event: string, listener: any) => {
+        if (event === "message") {
+          const index = messageListeners.indexOf(listener);
+          if (index > -1) {
+            messageListeners.splice(index, 1);
+          }
+        }
+      },
+    );
+
+    appMetadata = {
+      appIcon: "https://test.com/icon.png",
+      appName: "Test App",
+    };
+
+    onDisconnectCallback = mock();
+
     communicator = new Communicator({
-      appMetadata: { appLogoUrl: "https://test.com/logo.png", appName: "Test App" },
-      onDisconnectCallback: () => {},
+      appMetadata,
+      onDisconnectCallback,
     });
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    messageListeners = [];
   });
 
-  it("should open a popup and send a message to correct backend url", async () => {
-    communicator.postMessage({ chainId: DEFAULT_CHAIN_ID, event: GeminiSdkEvent.SDK_CONNECT, origin: "" });
-    expect(openPopup).toHaveBeenCalledWith(new URL("https://mock-backend.com"));
-  });
-
-  it("should send a request and wait for response", async () => {
-    vi.spyOn(communicator, "onMessage").mockResolvedValue({
-      event: GeminiSdkEvent.SDK_CONNECT,
-      requestId: mockRequestId,
+  describe("constructor", () => {
+    it("should initialize with app metadata", () => {
+      expect(communicator).toBeDefined();
     });
 
-    const response = await communicator.postRequestAndWaitForResponse({
-      chainId: DEFAULT_CHAIN_ID,
-      event: GeminiSdkEvent.SDK_CONNECT,
-      origin: "",
-      requestId: mockRequestId,
+    it("should store disconnect callback", () => {
+      const customCallback = mock();
+      const customCommunicator = new Communicator({
+        appMetadata,
+        onDisconnectCallback: customCallback,
+      });
+      expect(customCommunicator).toBeDefined();
     });
-    expect(response).toEqual({ event: GeminiSdkEvent.SDK_CONNECT, requestId: mockRequestId });
   });
 
-  it("should listen for messages matching a predicate", async () => {
-    const mockMessage = { event: GeminiSdkEvent.SDK_CONNECT, id: mockRequestId };
-    const event = new MessageEvent("message", { data: mockMessage, origin: SDK_BACKEND_URL });
+  describe("waitForPopupLoaded", () => {
+    it("should open popup and wait for load event", async () => {
+      const popupPromise = communicator.waitForPopupLoaded();
 
-    setTimeout(() => window.dispatchEvent(event), 250);
+      // Simulate popup loaded event
+      simulateMessage({
+        event: GeminiSdkEvent.POPUP_LOADED,
+        requestId: "test-request-id",
+      });
 
-    await expect(communicator.onMessage(({ event }) => event === GeminiSdkEvent.SDK_CONNECT)).resolves.toEqual(
-      mockMessage,
-    );
-  });
-
-  it("should handle popup loaded event and send app metadata", async () => {
-    vi.spyOn(communicator as any, "onRequestCancelled").mockImplementation(() => {});
-    vi.spyOn(communicator, "onMessage").mockResolvedValueOnce({
-      event: GeminiSdkEvent.POPUP_LOADED,
-      requestId: mockRequestId,
+      const popup = await popupPromise;
+      expect(popup).toBe(mockPopup);
     });
-    vi.spyOn(communicator, "postMessage");
 
-    setTimeout(() => {
-      window.dispatchEvent(
-        new MessageEvent("message", {
-          data: { event: GeminiSdkEvent.POPUP_LOADED, requestId: mockRequestId },
-          origin: SDK_BACKEND_URL,
+    it("should send app context after popup loads", async () => {
+      const popupPromise = communicator.waitForPopupLoaded();
+
+      simulateMessage({
+        event: GeminiSdkEvent.POPUP_LOADED,
+        requestId: "test-request-id",
+      });
+
+      await popupPromise;
+
+      expect(mockPopup.postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          chainId: DEFAULT_CHAIN_ID,
+          data: expect.objectContaining({
+            appMetadata,
+            origin: window.location.origin,
+            sdkVersion: SDK_VERSION,
+          }),
+          event: GeminiSdkEvent.POPUP_APP_CONTEXT,
         }),
+        new URL(SDK_BACKEND_URL).origin,
       );
-    }, 250);
+    });
 
-    await communicator.waitForPopupLoaded();
+    it("should focus existing popup if already open", async () => {
+      // First open
+      const popupPromise1 = communicator.waitForPopupLoaded();
+      simulateMessage({
+        event: GeminiSdkEvent.POPUP_LOADED,
+        requestId: "req1",
+      });
+      await popupPromise1;
 
-    expect(communicator.postMessage).toHaveBeenCalledWith({
-      chainId: DEFAULT_CHAIN_ID,
-      data: {
-        appMetadata: { appLogoUrl: "https://test.com/logo.png", appName: "Test App" },
+      // Second call should focus existing
+      mockPopup.focus.mockClear();
+      const popup2 = await communicator.waitForPopupLoaded();
+
+      expect(mockPopup.focus).toHaveBeenCalled();
+      expect(popup2).toBe(mockPopup);
+    });
+
+    it("should reopen popup if previous was closed", async () => {
+      // First open
+      const popupPromise1 = communicator.waitForPopupLoaded();
+      simulateMessage({
+        event: GeminiSdkEvent.POPUP_LOADED,
+        requestId: "req1",
+      });
+      await popupPromise1;
+
+      // Mark as closed
+      mockPopup.closed = true;
+
+      // Should open new popup
+      const popupPromise2 = communicator.waitForPopupLoaded();
+      simulateMessage({
+        event: GeminiSdkEvent.POPUP_LOADED,
+        requestId: "req2",
+      });
+      const popup2 = await popupPromise2;
+
+      expect(popup2).toBe(mockPopup);
+    });
+  });
+
+  describe("postMessage", () => {
+    it("should post message to popup", async () => {
+      // Open popup first
+      const popupPromise = communicator.waitForPopupLoaded();
+      simulateMessage({
+        event: GeminiSdkEvent.POPUP_LOADED,
+        requestId: "req1",
+      });
+      await popupPromise;
+
+      const message: GeminiSdkMessage = {
+        chainId: 1,
+        data: {},
+        event: GeminiSdkEvent.SDK_CONNECT_REQUEST,
         origin: window.location.origin,
-        sdkVersion: "0.0.1",
-      },
-      event: GeminiSdkEvent.POPUP_APP_CONTEXT,
-      origin: window.location.origin,
-      requestId: mockRequestId,
+        requestId: "test-request",
+      };
+
+      await communicator.postMessage(message);
+      expect(mockPopup.postMessage).toHaveBeenCalledWith(
+        message,
+        new URL(SDK_BACKEND_URL).origin,
+      );
+    });
+  });
+
+  describe("postRequestAndWaitForResponse", () => {
+    it("should post request and wait for matching response", async () => {
+      // Open popup first
+      const popupPromise = communicator.waitForPopupLoaded();
+      simulateMessage({
+        event: GeminiSdkEvent.POPUP_LOADED,
+        requestId: "req1",
+      });
+      await popupPromise;
+
+      const request: GeminiSdkMessage = {
+        chainId: 1,
+        data: {},
+        event: GeminiSdkEvent.SDK_CONNECT_REQUEST,
+        origin: window.location.origin,
+        requestId: "test-request-123",
+      };
+
+      const responsePromise = communicator.postRequestAndWaitForResponse<
+        GeminiSdkMessage,
+        GeminiSdkMessageResponse
+      >(request);
+
+      // Simulate response
+      const response: GeminiSdkMessageResponse = {
+        chainId: 1,
+        data: { accounts: ["0x123"] },
+        event: GeminiSdkEvent.SDK_CONNECT_RESPONSE,
+        origin: window.location.origin,
+        requestId: "test-request-123",
+      };
+
+      simulateMessage(response);
+
+      const result = await responsePromise;
+      expect(result).toEqual(response);
+    });
+
+    it("should ignore responses with different requestId", async () => {
+      // Open popup first
+      const popupPromise = communicator.waitForPopupLoaded();
+      simulateMessage({
+        event: GeminiSdkEvent.POPUP_LOADED,
+        requestId: "req1",
+      });
+      await popupPromise;
+
+      const request: GeminiSdkMessage = {
+        chainId: 1,
+        data: {},
+        event: GeminiSdkEvent.SDK_CONNECT_REQUEST,
+        origin: window.location.origin,
+        requestId: "correct-id",
+      };
+
+      const responsePromise = communicator.postRequestAndWaitForResponse<
+        GeminiSdkMessage,
+        GeminiSdkMessageResponse
+      >(request);
+
+      // Send wrong response
+      simulateMessage({
+        data: { accounts: [] },
+        event: GeminiSdkEvent.SDK_CONNECT_RESPONSE,
+        requestId: "wrong-id",
+      });
+
+      // Send correct response
+      simulateMessage({
+        data: { accounts: ["0x456"] },
+        event: GeminiSdkEvent.SDK_CONNECT_RESPONSE,
+        requestId: "correct-id",
+      });
+
+      const result = await responsePromise;
+      expect(result.requestId).toBe("correct-id");
+    });
+  });
+
+  describe("onMessage", () => {
+    it("should filter messages by predicate", async () => {
+      const messagePromise = communicator.onMessage<
+        GeminiSdkMessage,
+        GeminiSdkMessageResponse
+      >((message) => message.event === GeminiSdkEvent.SDK_CONNECT_RESPONSE);
+
+      // Send non-matching message
+      simulateMessage({
+        event: GeminiSdkEvent.SDK_DISCONNECT,
+        requestId: "req1",
+      });
+
+      // Send matching message
+      simulateMessage({
+        data: { success: true },
+        event: GeminiSdkEvent.SDK_CONNECT_RESPONSE,
+        requestId: "req2",
+      });
+
+      const result = await messagePromise;
+      expect(result.event).toBe(GeminiSdkEvent.SDK_CONNECT_RESPONSE);
+      expect(result.requestId).toBe("req2");
+    });
+
+    it("should ignore messages from wrong origin", async () => {
+      const messagePromise = communicator.onMessage<
+        GeminiSdkMessage,
+        GeminiSdkMessageResponse
+      >((message) => message.event === GeminiSdkEvent.SDK_CONNECT_RESPONSE);
+
+      // Send from wrong origin
+      simulateMessage(
+        {
+          event: GeminiSdkEvent.SDK_CONNECT_RESPONSE,
+          requestId: "wrong-origin",
+        },
+        "https://evil.com",
+      );
+
+      // Send from correct origin
+      simulateMessage({
+        event: GeminiSdkEvent.SDK_CONNECT_RESPONSE,
+        requestId: "correct-origin",
+      });
+
+      const result = await messagePromise;
+      expect(result.requestId).toBe("correct-origin");
+    });
+
+    it("should remove listener after message received", async () => {
+      const initialListenerCount = messageListeners.length;
+
+      const messagePromise = communicator.onMessage<
+        GeminiSdkMessage,
+        GeminiSdkMessageResponse
+      >((message) => message.event === GeminiSdkEvent.SDK_CONNECT_RESPONSE);
+
+      // Should have added a listener
+      expect(messageListeners.length).toBe(initialListenerCount + 1);
+
+      simulateMessage({
+        event: GeminiSdkEvent.SDK_CONNECT_RESPONSE,
+        requestId: "test",
+      });
+
+      await messagePromise;
+
+      // Should have removed the listener
+      expect(messageListeners.length).toBe(initialListenerCount);
+    });
+  });
+
+  describe("popup disconnect handling", () => {
+    it("should call disconnect callback on SDK_DISCONNECT event", async () => {
+      // Open popup first
+      const popupPromise = communicator.waitForPopupLoaded();
+      simulateMessage({
+        event: GeminiSdkEvent.POPUP_LOADED,
+        requestId: "req1",
+      });
+      await popupPromise;
+
+      // Simulate disconnect event
+      simulateMessage({
+        event: GeminiSdkEvent.SDK_DISCONNECT,
+        requestId: "disconnect-req",
+      });
+
+      // Wait for event processing
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(onDisconnectCallback).toHaveBeenCalled();
+    });
+
+    it("should reject pending requests on POPUP_UNLOADED", async () => {
+      // Open popup first
+      const popupPromise = communicator.waitForPopupLoaded();
+      simulateMessage({
+        event: GeminiSdkEvent.POPUP_LOADED,
+        requestId: "req1",
+      });
+      await popupPromise;
+
+      // Start a pending request
+      const pendingPromise = communicator.onMessage<
+        GeminiSdkMessage,
+        GeminiSdkMessageResponse
+      >((message) => message.event === ("WILL_NEVER_ARRIVE" as any));
+
+      // Simulate popup unloaded
+      simulateMessage({
+        event: GeminiSdkEvent.POPUP_UNLOADED,
+        requestId: "unload-req",
+      });
+
+      try {
+        await pendingPromise;
+        expect(true).toBe(false); // Should not reach here
+      } catch (error: any) {
+        expect(error.code).toBe(providerErrors.userRejectedRequest().code);
+      }
+    });
+
+    it("should clear all listeners on disconnect", async () => {
+      // Open popup first
+      const popupPromise = communicator.waitForPopupLoaded();
+      simulateMessage({
+        event: GeminiSdkEvent.POPUP_LOADED,
+        requestId: "req1",
+      });
+      await popupPromise;
+
+      // Add multiple listeners - create promises but don't await yet
+      const promise1 = communicator.onMessage<
+        GeminiSdkMessage,
+        GeminiSdkMessageResponse
+      >((message) => message.event === ("EVENT1" as any));
+      const promise2 = communicator.onMessage<
+        GeminiSdkMessage,
+        GeminiSdkMessageResponse
+      >((message) => message.event === ("EVENT2" as any));
+
+      // Collect rejection errors
+      const errors: any[] = [];
+      promise1.catch((err) => errors.push(err));
+      promise2.catch((err) => errors.push(err));
+
+      const initialListenerCount = messageListeners.length;
+      expect(initialListenerCount).toBeGreaterThan(0);
+
+      // Simulate disconnect
+      simulateMessage({
+        event: GeminiSdkEvent.SDK_DISCONNECT,
+        requestId: "disconnect",
+      });
+
+      // Wait for cleanup and error propagation
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Both promises should have rejected with user rejection error
+      expect(errors.length).toBe(2);
+      expect(errors[0].code).toBe(providerErrors.userRejectedRequest().code);
+      expect(errors[1].code).toBe(providerErrors.userRejectedRequest().code);
+    });
+  });
+
+  describe("error handling", () => {
+    it("should handle popup unloaded event", async () => {
+      // Open popup first
+      const popupPromise = communicator.waitForPopupLoaded();
+      simulateMessage({
+        event: GeminiSdkEvent.POPUP_LOADED,
+        requestId: "req1",
+      });
+      await popupPromise;
+
+      // Start a request that will be rejected
+      const pendingPromise = communicator.onMessage<
+        GeminiSdkMessage,
+        GeminiSdkMessageResponse
+      >((message) => message.event === ("WILL_NEVER_ARRIVE" as any));
+
+      // Force rejection by simulating unload
+      simulateMessage({
+        event: GeminiSdkEvent.POPUP_UNLOADED,
+        requestId: "unload",
+      });
+
+      try {
+        await pendingPromise;
+        expect(true).toBe(false); // Should not reach here
+      } catch (error: any) {
+        expect(error.code).toBe(providerErrors.userRejectedRequest().code);
+      }
     });
   });
 });

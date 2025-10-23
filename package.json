@@ -1,16 +1,15 @@
 {
   "name": "@gemini-wallet/core",
-  "version": "1.0.0",
+  "version": "0.3.1",
   "description": "Core SDK for Gemini Wallet integration with popup communication",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/gemini/gemini-wallet-core"
+    "url": "git+https://github.com/gemini/gemini-wallet-core.git"
   },
-  "homepage": "https://github.com/gemini/gemini-wallet-core",
+  "homepage": "https://keys.gemini.com",
   "bugs": {
     "url": "https://github.com/gemini/gemini-wallet-core/issues"
   },
@@ -25,30 +24,48 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    }
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "build": "dotenv -e .env.production -- tsup",
+    "dev": "dotenv -e .env.local -- tsup --watch",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint ./src",
+    "lint:ci": "eslint --max-warnings 0 ./src",
     "lint:fix": "eslint ./src --fix",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test": "bun test"
   },
   "dependencies": {
     "@metamask/rpc-errors": "7.0.2",
     "eventemitter3": "5.0.1"
   },
   "devDependencies": {
-    "@types/node": "^20.14.9",
-    "@vitest/coverage-v8": "^2.0.5",
-    "eslint": "^8.57.0",
-    "tsup": "^8.4.0",
-    "typescript": "^5.5.3",
-    "vitest": "^2.0.5"
+    "@eslint/eslintrc": "3.3.1",
+    "@eslint/js": "9.33.0",
+    "@next/eslint-plugin-next": "15.4.7",
+    "@types/node": "22.13.0",
+    "dotenv-cli": "10.0.0",
+    "esbuild-plugin-replace": "1.4.0",
+    "eslint": "9.33.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-config-turbo": "2.5.6",
+    "eslint-plugin-import": "2.32.0",
+    "eslint-plugin-jsx-a11y": "6.10.2",
+    "eslint-plugin-only-warn": "1.1.0",
+    "eslint-plugin-prettier": "5.5.4",
+    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "5.2.0",
+    "eslint-plugin-simple-import-sort": "12.1.1",
+    "eslint-plugin-sort-keys-fix": "1.1.2",
+    "globals": "16.3.0",
+    "prettier": "3.6.2",
+    "tsup": "8.4.0",
+    "typescript": "5.5.3",
+    "typescript-eslint": "8.40.0",
+    "vitest": "3.2.4"
   },
   "peerDependencies": {
     "viem": ">=2.0.0"
@@ -60,5 +77,6 @@
     "ethereum",
     "web3",
     "crypto"
-  ]
+  ],
+  "module": "./dist/index.js"
 }

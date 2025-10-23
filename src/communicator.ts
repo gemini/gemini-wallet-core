@@ -1,28 +1,29 @@
 import { providerErrors, rpcErrors } from "@metamask/rpc-errors";
-import { 
+
+import { DEFAULT_CHAIN_ID } from "./constants";
+import {
   AppContext,
-  AppMetadata,
+  type AppMetadata,
   GeminiSdkEvent,
-  GeminiSdkMessage,
-  GeminiSdkMessageResponse 
+  type GeminiSdkMessage,
+  type GeminiSdkMessageResponse,
 } from "./types";
-import { closePopup, openPopup } from "./utils";
-import { SDK_BACKEND_URL, SDK_VERSION, DEFAULT_CHAIN_ID } from "./constants";
+import { closePopup, openPopup, SDK_BACKEND_URL, SDK_VERSION } from "./utils";
 
 type CommunicatorConfigParams = {
   appMetadata: AppMetadata;
   onDisconnectCallback?: () => void;
 };
 
-/**
- * Handles communication between the SDK and the Gemini Wallet popup window
- * using the postMessage API for secure cross-origin communication.
- */
+// creates and communicates with a popup window to send and receive messages
 export class Communicator {
   private readonly appMetadata: AppMetadata;
   private readonly url: URL;
   private popup: Window | null = null;
-  private listeners = new Map<(_: MessageEvent) => void, { reject: (_: Error) => void }>();
+  private listeners = new Map<
+    (_: MessageEvent) => void,
+    { reject: (_: Error) => void }
+  >();
   private onDisconnectCallback?: () => void;
 
   constructor({ appMetadata, onDisconnectCallback }: CommunicatorConfigParams) {
@@ -31,36 +32,33 @@ export class Communicator {
     this.onDisconnectCallback = onDisconnectCallback;
   }
 
-  /**
-   * Posts a message to the popup window
-   */
-  async postMessage(message: GeminiSdkMessage): Promise<void> {
+  // posts a message to the popup window
+  postMessage = async (message: GeminiSdkMessage) => {
     const popup = await this.waitForPopupLoaded();
     popup.postMessage(message, this.url.origin);
-  }
+  };
 
-  /**
-   * Posts a request to the popup window and waits for a response
-   */
-  async postRequestAndWaitForResponse<
-    M extends GeminiSdkMessage, 
-    R extends GeminiSdkMessageResponse
-  >(request: GeminiSdkMessage): Promise<R> {
-    const responsePromise = this.onMessage<M, R>(({ requestId }) => requestId === request.requestId);
-    await this.postMessage(request);
-    return responsePromise;
-  }
+  // posts a request to the popup window and waits for a response
+  postRequestAndWaitForResponse = async <
+    M extends GeminiSdkMessage,
+    R extends GeminiSdkMessageResponse,
+  >(
+    request: GeminiSdkMessage,
+  ): Promise<R> => {
+    const responsePromise = this.onMessage<M, R>(
+      ({ requestId }) => requestId === request.requestId,
+    );
+    this.postMessage(request);
+    return await responsePromise;
+  };
 
-  /**
-   * Listens for messages from the popup window that match a given predicate
-   */
-  async onMessage<
-    M extends GeminiSdkMessage, 
-    R extends GeminiSdkMessageResponse
-  >(predicate: (_: Partial<M>) => boolean): Promise<R> {
+  // listens for messages from the popup window that match a given predicate
+  onMessage = <M extends GeminiSdkMessage, R extends GeminiSdkMessageResponse>(
+    predicate: (_: Partial<M>) => boolean,
+  ): Promise<R> => {
     return new Promise((resolve, reject) => {
       const listener = (event: MessageEvent<M>) => {
-        // Ensure origin of message
+        // ensure origin of message
         if (event.origin !== this.url.origin) return;
 
         const message = event.data;
@@ -74,12 +72,10 @@ export class Communicator {
       window.addEventListener("message", listener);
       this.listeners.set(listener, { reject });
     });
-  }
+  };
 
-  /**
-   * Closes the popup, rejects all pending requests and clears event listeners
-   */
-  private onRequestCancelled(): void {
+  // closes the popup, rejects all requests and clears event listeners
+  private onRequestCancelled = () => {
     closePopup(this.popup);
     this.popup = null;
 
@@ -88,44 +84,42 @@ export class Communicator {
       window.removeEventListener("message", listener);
     });
     this.listeners.clear();
-  }
+  };
 
-  /**
-   * Waits for the popup window to fully load and then sends app context
-   */
-  async waitForPopupLoaded(): Promise<Window> {
+  // waits for the popup window to fully load and then sends a version message
+  waitForPopupLoaded = (): Promise<Window> => {
     if (this.popup && !this.popup.closed) {
-      // In case the user un-focused the popup between requests, focus it again
+      // in case the user un-focused the popup between requests, focus it again
       this.popup.focus();
-      return this.popup;
+      return Promise.resolve(this.popup);
     }
 
     this.popup = openPopup(this.url);
 
-    // Setup popup closed listener in case user closes window without explicit response
+    // setup popup closed listener in case user closes window without explicit response
     this.onMessage<GeminiSdkMessage, GeminiSdkMessageResponse>(
-      ({ event }) => event === GeminiSdkEvent.POPUP_UNLOADED
+      ({ event }) => event === GeminiSdkEvent.POPUP_UNLOADED,
     )
-      .then(() => this.onRequestCancelled())
+      .then(this.onRequestCancelled)
       .catch(() => {});
 
-    // Setup account disconnect listener in case user requests disconnect from within popup
+    // setup account disconnect listener in case user requests disconnect from within popup
     this.onMessage<GeminiSdkMessage, GeminiSdkMessageResponse>(
-      ({ event }) => event === GeminiSdkEvent.SDK_DISCONNECT
+      ({ event }) => event === GeminiSdkEvent.SDK_DISCONNECT,
     )
       .then(() => {
-        // Invoke disconnect callback passed in from wallet
+        // invoke disconnect callback passed in from wallet
         this.onDisconnectCallback?.();
-        // Cleanup remaining event listeners
+        // cleanup remaining event listeners
         this.onRequestCancelled();
       })
       .catch(() => {});
 
     return this.onMessage<GeminiSdkMessage, GeminiSdkMessageResponse>(
-      ({ event }) => event === GeminiSdkEvent.POPUP_LOADED
+      ({ event }) => event === GeminiSdkEvent.POPUP_LOADED,
     )
-      .then(message => {
-        // Report app metadata to backend upon load complete
+      .then((message) => {
+        // report app metadata to backend upon load complete
         this.postMessage({
           chainId: DEFAULT_CHAIN_ID,
           data: {
@@ -137,11 +131,10 @@ export class Communicator {
           origin: window.location.origin,
           requestId: message.requestId,
         });
-        return message;
       })
       .then(() => {
         if (!this.popup) throw rpcErrors.internal();
         return this.popup;
       });
-  }
+  };
 }

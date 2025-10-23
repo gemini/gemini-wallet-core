@@ -1,15 +1,17 @@
-import { providerErrors, rpcErrors } from "@metamask/rpc-errors";
-import { POPUP_WIDTH, POPUP_HEIGHT } from "../constants";
+import { rpcErrors } from "@metamask/rpc-errors";
+
+const POPUP_WIDTH = 420;
+const POPUP_HEIGHT = 650;
 
 export const openPopup = (url: URL): Window => {
   const left = (window.innerWidth - POPUP_WIDTH) / 2 + window.screenX;
   const top = (window.innerHeight - POPUP_HEIGHT) / 2 + window.screenY;
 
-  const popupId = `gemini_wallet_${crypto.randomUUID()}`;
+  const popupId = `wallet_${window?.crypto?.randomUUID()}`;
   const popup = window.open(
-    url, 
-    popupId, 
-    `width=${POPUP_WIDTH}, height=${POPUP_HEIGHT}, left=${left}, top=${top}`
+    url,
+    popupId,
+    `width=${POPUP_WIDTH}, height=${POPUP_HEIGHT}, left=${left}, top=${top}`,
   );
 
   popup?.focus();
@@ -23,6 +25,7 @@ export const openPopup = (url: URL): Window => {
 
 export const closePopup = (popup: Window | null) => {
   if (popup && !popup.closed) {
+    popup.opener?.focus();
     popup.close();
   }
 };
