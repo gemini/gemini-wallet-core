@@ -5,9 +5,7 @@ import type { GeminiProviderConfig } from "../types";
 import { GeminiWalletProvider } from "./provider";
 
 describe("GeminiProviderConfig", () => {
-  const createMockConfig = (
-    overrides: Partial<GeminiProviderConfig> = {},
-  ): GeminiProviderConfig => ({
+  const createMockConfig = (overrides: Partial<GeminiProviderConfig> = {}): GeminiProviderConfig => ({
     appMetadata: {
       description: "Test Description",
       icons: [],

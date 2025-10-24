@@ -73,8 +73,7 @@ describe("ENS utilities", () => {
 
     it("should handle address without ENS name", async () => {
       // Using a random address that shouldn't have an ENS name
-      const randomAddress: Address =
-        "0x1234567890123456789012345678901234567890";
+      const randomAddress: Address = "0x1234567890123456789012345678901234567890";
       const result = await reverseResolveEns(randomAddress);
 
       expect(result).toEqual({
@@ -114,9 +113,7 @@ describe("ENS utilities", () => {
         address: testAddress,
         name: "mike.gemini.eth",
       });
-      expect(mockFetch).toHaveBeenCalledWith(
-        `${ENS_API_URL}/reverse/${testAddress}`,
-      );
+      expect(mockFetch).toHaveBeenCalledWith(`${ENS_API_URL}/reverse/${testAddress}`);
     });
 
     it("should return null name when ENS name is not found", async () => {
@@ -258,9 +255,7 @@ describe("ENS utilities", () => {
 
       const expectedUrl = `${ENS_API_URL}/reverse/${testAddress}`;
       expect(mockFetch).toHaveBeenCalledWith(expectedUrl);
-      expect(expectedUrl).toBe(
-        `https://horizon-api.gemini.com/api/ens/reverse/${testAddress}`,
-      );
+      expect(expectedUrl).toBe(`https://horizon-api.gemini.com/api/ens/reverse/${testAddress}`);
     });
   });
 });

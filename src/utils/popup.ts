@@ -8,11 +8,7 @@ export const openPopup = (url: URL): Window => {
   const top = (window.innerHeight - POPUP_HEIGHT) / 2 + window.screenY;
 
   const popupId = `wallet_${window?.crypto?.randomUUID()}`;
-  const popup = window.open(
-    url,
-    popupId,
-    `width=${POPUP_WIDTH}, height=${POPUP_HEIGHT}, left=${left}, top=${top}`,
-  );
+  const popup = window.open(url, popupId, `width=${POPUP_WIDTH}, height=${POPUP_HEIGHT}, left=${left}, top=${top}`);
 
   popup?.focus();
 

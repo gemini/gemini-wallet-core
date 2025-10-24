@@ -7,17 +7,8 @@ import {
 } from "viem";
 
 import { Communicator } from "../communicator";
-import {
-  DEFAULT_CHAIN_ID,
-  getDefaultRpcUrl,
-  SUPPORTED_CHAIN_IDS,
-} from "../constants";
-import {
-  GeminiStorage,
-  type IStorage,
-  STORAGE_ETH_ACCOUNTS_KEY,
-  STORAGE_ETH_ACTIVE_CHAIN_KEY,
-} from "../storage";
+import { DEFAULT_CHAIN_ID, getDefaultRpcUrl, SUPPORTED_CHAIN_IDS } from "../constants";
+import { GeminiStorage, type IStorage, STORAGE_ETH_ACCOUNTS_KEY, STORAGE_ETH_ACTIVE_CHAIN_KEY } from "../storage";
 import {
   type Chain,
   type ConnectResponse,
@@ -35,9 +26,7 @@ import {
 } from "../types";
 
 export function isChainSupportedByGeminiSw(chainId: number): boolean {
-  return SUPPORTED_CHAIN_IDS.includes(
-    chainId as (typeof SUPPORTED_CHAIN_IDS)[number],
-  );
+  return SUPPORTED_CHAIN_IDS.includes(chainId as (typeof SUPPORTED_CHAIN_IDS)[number]);
 }
 
 export class GeminiWallet {
@@ -47,12 +36,7 @@ export class GeminiWallet {
   public accounts: Address[] = [];
   public chain: Chain = { id: DEFAULT_CHAIN_ID };
 
-  constructor({
-    appMetadata,
-    chain,
-    onDisconnectCallback,
-    storage,
-  }: Readonly<GeminiProviderConfig>) {
+  constructor({ appMetadata, chain, onDisconnectCallback, storage }: Readonly<GeminiProviderConfig>) {
     this.communicator = new Communicator({
       appMetadata,
       onDisconnectCallback,
@@ -76,14 +60,8 @@ export class GeminiWallet {
       rpcUrl: defaultChain.rpcUrl || getDefaultRpcUrl(defaultChain.id),
     };
     const [storedChain, storedAccounts] = await Promise.all([
-      this.storage.loadObject<Chain>(
-        STORAGE_ETH_ACTIVE_CHAIN_KEY,
-        fallbackChain,
-      ),
-      this.storage.loadObject<Address[]>(
-        STORAGE_ETH_ACCOUNTS_KEY,
-        this.accounts,
-      ),
+      this.storage.loadObject<Chain>(STORAGE_ETH_ACTIVE_CHAIN_KEY, fallbackChain),
+      this.storage.loadObject<Address[]>(STORAGE_ETH_ACCOUNTS_KEY, this.accounts),
     ]);
 
     // Ensure chain has rpcUrl fallback
@@ -100,10 +78,7 @@ export class GeminiWallet {
 
   async connect(): Promise<Address[]> {
     await this.ensureInitialized();
-    const response = await this.sendMessageToPopup<
-      GeminiSdkMessage,
-      ConnectResponse
-    >({
+    const response = await this.sendMessageToPopup<GeminiSdkMessage, ConnectResponse>({
       chainId: this.chain.id,
       event: GeminiSdkEvent.SDK_CONNECT,
       origin: window.location.origin,
@@ -136,10 +111,7 @@ export class GeminiWallet {
     }
 
     // Message sdk to inform user of error
-    const response = await this.sendMessageToPopup<
-      GeminiSdkMessage,
-      SwitchChainResponse
-    >({
+    const response = await this.sendMessageToPopup<GeminiSdkMessage, SwitchChainResponse>({
       chainId: this.chain.id,
       data: id,
       event: GeminiSdkEvent.SDK_SWITCH_CHAIN,
@@ -150,14 +122,9 @@ export class GeminiWallet {
     return response.data.error ?? "Unsupported chain.";
   }
 
-  async sendTransaction(
-    txData: TransactionRequest,
-  ): Promise<SendTransactionResponse["data"]> {
+  async sendTransaction(txData: TransactionRequest): Promise<SendTransactionResponse["data"]> {
     await this.ensureInitialized();
-    const response = await this.sendMessageToPopup<
-      GeminiSdkSendTransaction,
-      SendTransactionResponse
-    >({
+    const response = await this.sendMessageToPopup<GeminiSdkSendTransaction, SendTransactionResponse>({
       chainId: this.chain.id,
       data: txData,
       event: GeminiSdkEvent.SDK_SEND_TRANSACTION,
@@ -167,14 +134,9 @@ export class GeminiWallet {
     return response.data;
   }
 
-  async signData({
-    message,
-  }: SignMessageParameters): Promise<SignMessageResponse["data"]> {
+  async signData({ message }: SignMessageParameters): Promise<SignMessageResponse["data"]> {
     await this.ensureInitialized();
-    const response = await this.sendMessageToPopup<
-      GeminiSdkSignMessage,
-      SignMessageResponse
-    >({
+    const response = await this.sendMessageToPopup<GeminiSdkSignMessage, SignMessageResponse>({
       chainId: this.chain.id,
       data: { message },
       event: GeminiSdkEvent.SDK_SIGN_DATA,
@@ -191,10 +153,7 @@ export class GeminiWallet {
     domain,
   }: SignTypedDataParameters): Promise<SignTypedDataResponse["data"]> {
     await this.ensureInitialized();
-    const response = await this.sendMessageToPopup<
-      GeminiSdkSignTypedData,
-      SignTypedDataResponse
-    >({
+    const response = await this.sendMessageToPopup<GeminiSdkSignTypedData, SignTypedDataResponse>({
       chainId: this.chain.id,
       data: {
         domain,
@@ -218,10 +177,9 @@ export class GeminiWallet {
     });
   }
 
-  private sendMessageToPopup<
-    M extends GeminiSdkMessage,
-    R extends GeminiSdkMessageResponse,
-  >(request: GeminiSdkMessage): Promise<R> {
+  private sendMessageToPopup<M extends GeminiSdkMessage, R extends GeminiSdkMessageResponse>(
+    request: GeminiSdkMessage,
+  ): Promise<R> {
     return this.communicator.postRequestAndWaitForResponse<M, R>({
       ...request,
       requestId: window?.crypto?.randomUUID(),

@@ -15,9 +15,7 @@ import packageJson from "../package.json";
 
 const DEFAULT_BACKEND_URL = "https://keys.gemini.com";
 
-export const SDK_BACKEND_URL =
-  (typeof process !== "undefined" && process.env?.SDK_BACKEND_URL) ||
-  DEFAULT_BACKEND_URL;
+export const SDK_BACKEND_URL = (typeof process !== "undefined" && process.env?.SDK_BACKEND_URL) || DEFAULT_BACKEND_URL;
 export const ENS_API_URL = "https://horizon-api.gemini.com/api/ens";
 export const SDK_VERSION = packageJson.version;
 export const DEFAULT_CHAIN_ID = 42161; // Arbitrum One
@@ -41,10 +39,7 @@ export const TESTNET_CHAIN_IDS = {
 } as const;
 
 // All supported chain IDs
-export const SUPPORTED_CHAIN_IDS = [
-  ...Object.values(MAINNET_CHAIN_IDS),
-  ...Object.values(TESTNET_CHAIN_IDS),
-];
+export const SUPPORTED_CHAIN_IDS = [...Object.values(MAINNET_CHAIN_IDS), ...Object.values(TESTNET_CHAIN_IDS)];
 
 // Helper function to get default RPC URL for a chain using viem chains
 export function getDefaultRpcUrl(chainId: number): string | undefined {

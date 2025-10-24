@@ -49,10 +49,7 @@ export type {
 export { GeminiSdkEvent, PlatformType, ProviderEventEmitter } from "./types";
 
 // Utility exports
-export type {
-  CalculateWalletAddressParams,
-  WebAuthnValidatorData,
-} from "./utils";
+export type { CalculateWalletAddressParams, WebAuthnValidatorData } from "./utils";
 export {
   base64ToHex,
   bufferToBase64URLString,
@@ -71,10 +68,4 @@ export {
 } from "./utils";
 
 // Constants
-export {
-  DEFAULT_CHAIN_ID,
-  POPUP_HEIGHT,
-  POPUP_WIDTH,
-  SDK_BACKEND_URL,
-  SDK_VERSION,
-} from "./constants";
+export { DEFAULT_CHAIN_ID, POPUP_HEIGHT, POPUP_WIDTH, SDK_BACKEND_URL, SDK_VERSION } from "./constants";

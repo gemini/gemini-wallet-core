@@ -48,8 +48,7 @@ export interface IStorage {
 export const STORAGE_ETH_ACCOUNTS_KEY = "eth-accounts";
 export const STORAGE_ETH_ACTIVE_CHAIN_KEY = "eth-active-chain";
 export const STORAGE_PASSKEY_CREDENTIAL_KEY = "passkey-credential";
-export const STORAGE_PRESERVED_PASSKEY_CREDENTIALS_KEY =
-  "preserved-passkey-credentials";
+export const STORAGE_PRESERVED_PASSKEY_CREDENTIALS_KEY = "preserved-passkey-credentials";
 export const STORAGE_SMART_ACCOUNT_KEY = "smart-account";
 export const STORAGE_SETTINGS_KEY = "settings";
 export const STORAGE_WC_REQUESTS_KEY = "wc-requests";

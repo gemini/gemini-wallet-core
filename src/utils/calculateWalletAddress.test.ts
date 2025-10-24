@@ -11,8 +11,7 @@ describe("calculateWalletAddress", () => {
   test("should calculate exact wallet address", () => {
     const publicKey =
       "0x900fb1e17b7766916a8dad6f8a26b3dbc4fe4f9b1ea5f2d20b7cb31e44c5ff54e63df1865b444a4e7b74a33ef8e3a269f77a6ba5afd072fc641ad5c7f9d626c7" as const;
-    const credentialId =
-      "XJ980eHLIRtTop-iX4-wAtSUQ-GxPv_6JIprPE2nN-RBgfJKZPWEWzC-amiRxzfjpks_7q7A8Q";
+    const credentialId = "XJ980eHLIRtTop-iX4-wAtSUQ-GxPv_6JIprPE2nN-RBgfJKZPWEWzC-amiRxzfjpks_7q7A8Q";
 
     const calculatedAddress = calculateWalletAddress({
       credentialId,
@@ -27,8 +26,7 @@ describe("calculateWalletAddress", () => {
   test("should calculate V1 wallet address", () => {
     const publicKey =
       "0x900fb1e17b7766916a8dad6f8a26b3dbc4fe4f9b1ea5f2d20b7cb31e44c5ff54e63df1865b444a4e7b74a33ef8e3a269f77a6ba5afd072fc641ad5c7f9d626c7" as const;
-    const credentialId =
-      "XJ980eHLIRtTop-iX4-wAtSUQ-GxPv_6JIprPE2nN-RBgfJKZPWEWzC-amiRxzfjpks_7q7A8Q";
+    const credentialId = "XJ980eHLIRtTop-iX4-wAtSUQ-GxPv_6JIprPE2nN-RBgfJKZPWEWzC-amiRxzfjpks_7q7A8Q";
 
     const calculatedAddress = calculateV1Address({
       credentialId,
@@ -59,12 +57,10 @@ describe("calculateWalletAddress", () => {
   });
 
   test("should generate correct authenticator ID hash", () => {
-    const credentialId =
-      "XJ980eHLIRtTop-iX4-wAtSUQ-GxPv_6JIprPE2nN-RBgfJKZPWEWzC-amiRxzfjpks_7q7A8Q";
+    const credentialId = "XJ980eHLIRtTop-iX4-wAtSUQ-GxPv_6JIprPE2nN-RBgfJKZPWEWzC-amiRxzfjpks_7q7A8Q";
 
     const hash = generateAuthenticatorIdHash(credentialId);
-    const expectedHash =
-      "0xa919a485eff73c853844904a444f102f42d302320d3fee7c64136b0f4ef8357c";
+    const expectedHash = "0xa919a485eff73c853844904a444f102f42d302320d3fee7c64136b0f4ef8357c";
 
     console.log("Generated hash:", hash);
     console.log("Expected hash:", expectedHash);
@@ -78,16 +74,13 @@ describe("calculateWalletAddress", () => {
         credentialId: "test",
         publicKey: "0xinvalid",
       });
-    }).toThrow(
-      "Invalid public key: must be 64-byte hex string (0x + 128 chars)",
-    );
+    }).toThrow("Invalid public key: must be 64-byte hex string (0x + 128 chars)");
   });
 
   test("should use default index of 0", () => {
     const publicKey =
       "0x900fb1e17b7766916a8dad6f8a26b3dbc4fe4f9b1ea5f2d20b7cb31e44c5ff54e63df1865b444a4e7b74a33ef8e3a269f77a6ba5afd072fc641ad5c7f9d626c7" as const;
-    const credentialId =
-      "XJ980eHLIRtTop-iX4-wAtSUQ-GxPv_6JIprPE2nN-RBgfJKZPWEWzC-amiRxzfjpks_7q7A8Q";
+    const credentialId = "XJ980eHLIRtTop-iX4-wAtSUQ-GxPv_6JIprPE2nN-RBgfJKZPWEWzC-amiRxzfjpks_7q7A8Q";
 
     const address1 = calculateWalletAddress({ credentialId, publicKey });
     const address2 = calculateWalletAddress({

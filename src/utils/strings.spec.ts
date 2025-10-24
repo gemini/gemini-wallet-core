@@ -24,12 +24,8 @@ describe("Strings util", () => {
 
     test("handles edge cases", () => {
       expect(hexStringFromNumber(0)).toBe("0x0"); // Zero case
-      expect(hexStringFromNumber(Number.MAX_SAFE_INTEGER)).toBe(
-        `0x${BigInt(Number.MAX_SAFE_INTEGER).toString(16)}`,
-      );
-      expect(hexStringFromNumber(Number.MIN_SAFE_INTEGER)).toBe(
-        `0x${BigInt(Number.MIN_SAFE_INTEGER).toString(16)}`,
-      );
+      expect(hexStringFromNumber(Number.MAX_SAFE_INTEGER)).toBe(`0x${BigInt(Number.MAX_SAFE_INTEGER).toString(16)}`);
+      expect(hexStringFromNumber(Number.MIN_SAFE_INTEGER)).toBe(`0x${BigInt(Number.MIN_SAFE_INTEGER).toString(16)}`);
     });
 
     test("throws an error for non-number inputs", () => {

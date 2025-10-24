@@ -17,10 +17,7 @@ export class GeminiStorage implements IStorage {
   private scope: string;
   private module: string;
 
-  constructor({
-    scope = "@gemini",
-    module = "wallet",
-  }: GeminiStorageConfig = {}) {
+  constructor({ scope = "@gemini", module = "wallet" }: GeminiStorageConfig = {}) {
     this.scope = scope;
     this.module = module;
   }
@@ -89,6 +86,6 @@ export class GeminiStorage implements IStorage {
   }
 
   public async removeItems(keys: string[]): Promise<void> {
-    await Promise.all(keys.map((key) => this.removeItem(key)));
+    await Promise.all(keys.map(key => this.removeItem(key)));
   }
 }

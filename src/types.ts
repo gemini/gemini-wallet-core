@@ -1,11 +1,5 @@
 import { EventEmitter } from "eventemitter3";
-import type {
-  Address,
-  Hex,
-  SignMessageParameters,
-  SignTypedDataParameters,
-  TransactionRequest,
-} from "viem";
+import type { Address, Hex, SignMessageParameters, SignTypedDataParameters, TransactionRequest } from "viem";
 
 import { type IStorage } from "./storage/storageInterface";
 
@@ -86,20 +80,12 @@ export type ProviderEventMap = {
 
 export type ProviderEventCallback = ProviderInterface["emit"];
 
-export class ProviderEventEmitter extends EventEmitter<
-  keyof ProviderEventMap
-> {}
+export class ProviderEventEmitter extends EventEmitter<keyof ProviderEventMap> {}
 
 export interface ProviderInterface extends ProviderEventEmitter {
   disconnect(): Promise<void>;
-  emit<K extends keyof ProviderEventMap>(
-    event: K,
-    ...args: [ProviderEventMap[K]]
-  ): boolean;
-  on<K extends keyof ProviderEventMap>(
-    event: K,
-    listener: (_: ProviderEventMap[K]) => void,
-  ): this;
+  emit<K extends keyof ProviderEventMap>(event: K, ...args: [ProviderEventMap[K]]): boolean;
+  on<K extends keyof ProviderEventMap>(event: K, listener: (_: ProviderEventMap[K]) => void): this;
   request(args: RpcRequestArgs): Promise<any>;
 }
 
@@ -118,33 +104,27 @@ export interface GeminiSdkMessageResponse {
   requestId?: string;
 }
 
-export interface ConnectResponse
-  extends Omit<GeminiSdkMessageResponse, "data"> {
+export interface ConnectResponse extends Omit<GeminiSdkMessageResponse, "data"> {
   data: { address: Address };
 }
 
-export interface SendTransactionResponse
-  extends Omit<GeminiSdkMessageResponse, "data"> {
+export interface SendTransactionResponse extends Omit<GeminiSdkMessageResponse, "data"> {
   data: { hash?: Hex; error?: string };
 }
 
-export interface SignMessageResponse
-  extends Omit<GeminiSdkMessageResponse, "data"> {
+export interface SignMessageResponse extends Omit<GeminiSdkMessageResponse, "data"> {
   data: { hash?: Hex; error?: string };
 }
 
-export interface SignTypedDataResponse
-  extends Omit<GeminiSdkMessageResponse, "data"> {
+export interface SignTypedDataResponse extends Omit<GeminiSdkMessageResponse, "data"> {
   data: { hash?: Hex; error?: string };
 }
 
-export interface SwitchChainResponse
-  extends Omit<GeminiSdkMessageResponse, "data"> {
+export interface SwitchChainResponse extends Omit<GeminiSdkMessageResponse, "data"> {
   data: { chainId?: number; error?: string };
 }
 
-export interface GeminiSdkSendTransaction
-  extends Omit<GeminiSdkMessage, "data"> {
+export interface GeminiSdkSendTransaction extends Omit<GeminiSdkMessage, "data"> {
   data: TransactionRequest;
 }
 
@@ -160,8 +140,7 @@ export interface GeminiSdkSwitchChain extends Omit<GeminiSdkMessage, "data"> {
   data: number;
 }
 
-export interface GeminiSdkAppContextMessage
-  extends Omit<GeminiSdkMessage, "data"> {
+export interface GeminiSdkAppContextMessage extends Omit<GeminiSdkMessage, "data"> {
   data: AppContext;
 }
 

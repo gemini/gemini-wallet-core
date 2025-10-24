@@ -19,7 +19,7 @@ export function encodeBase64(array: Uint8Array): string {
     // Browser environment
     base64 = btoa(
       Array.from(array)
-        .map((b) => String.fromCharCode(b))
+        .map(b => String.fromCharCode(b))
         .join(""),
     );
   }
@@ -62,9 +62,7 @@ export function decodeBase64(base64url: string): Uint8Array {
  * @param buffer - The buffer to convert
  * @returns The base64url encoded string
  */
-export function bufferToBase64URLString(
-  buffer: ArrayBuffer | Uint8Array,
-): string {
+export function bufferToBase64URLString(buffer: ArrayBuffer | Uint8Array): string {
   const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
   return encodeBase64(bytes);
 }
@@ -99,6 +97,6 @@ export function utf8StringToBuffer(value: string): Uint8Array {
 export function base64ToHex(base64: string): string {
   const bytes = decodeBase64(base64);
   return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
+    .map(b => b.toString(16).padStart(2, "0"))
     .join("");
 }

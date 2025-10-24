@@ -10,10 +10,8 @@ import { hexStringFromNumber } from "../utils";
 import { GeminiWalletProvider } from "./provider";
 
 const mockAddress = "0xAfEDA61dB9e162293b2eF2C2bC5A800b37Bb5E4a" as Address;
-const mockTxHash =
-  "0x5de3752c591ecc35d1046f3aca2eba1ba5bdcfb786639a8661e9ecb823675743" as Hex;
-const mockSigHash =
-  "0x020d671b80fbd20466d8cb65cef79a24e3bca3fdf82e9dd89d78e7a4c4c045b" as Hex;
+const mockTxHash = "0x5de3752c591ecc35d1046f3aca2eba1ba5bdcfb786639a8661e9ecb823675743" as Hex;
+const mockSigHash = "0x020d671b80fbd20466d8cb65cef79a24e3bca3fdf82e9dd89d78e7a4c4c045b" as Hex;
 
 // Mock dependencies - Create a more comprehensive mock of GeminiWallet
 class MockGeminiWallet {

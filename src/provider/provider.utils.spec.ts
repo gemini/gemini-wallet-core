@@ -1,65 +1,46 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
-import {
-  convertSendValuesToBigInt,
-  fetchRpcRequest,
-  validateRpcRequestArgs,
-} from "./provider.utils";
+import { convertSendValuesToBigInt, fetchRpcRequest, validateRpcRequestArgs } from "./provider.utils";
 
 // Set up global window mock before tests
 (global as any).window = {
-  fetch: () =>
-    Promise.resolve({ json: () => Promise.resolve({ result: "success" }) }),
+  fetch: () => Promise.resolve({ json: () => Promise.resolve({ result: "success" }) }),
 };
 
 describe("Provider utils", () => {
   describe("validateRpcRequestArgs()", () => {
     it("should throw an error if args is null", () => {
-      expect(() => validateRpcRequestArgs(null)).toThrow(
-        "Expected a single, non-array, object argument.",
-      );
+      expect(() => validateRpcRequestArgs(null)).toThrow("Expected a single, non-array, object argument.");
     });
 
     it("should throw an error if args is not an object", () => {
-      expect(() => validateRpcRequestArgs(42)).toThrow(
-        "Expected a single, non-array, object argument.",
-      );
+      expect(() => validateRpcRequestArgs(42)).toThrow("Expected a single, non-array, object argument.");
     });
 
     it("should throw an error if args is an array", () => {
-      expect(() => validateRpcRequestArgs([])).toThrow(
-        "Expected a single, non-array, object argument.",
-      );
+      expect(() => validateRpcRequestArgs([])).toThrow("Expected a single, non-array, object argument.");
     });
 
     it("should throw an error if method is missing", () => {
-      expect(() => validateRpcRequestArgs({})).toThrow(
-        "'args.method' must be a non-empty string.",
-      );
+      expect(() => validateRpcRequestArgs({})).toThrow("'args.method' must be a non-empty string.");
     });
 
     it("should throw an error if method is not a string", () => {
-      expect(() => validateRpcRequestArgs({ method: 123 })).toThrow(
-        "'args.method' must be a non-empty string.",
-      );
+      expect(() => validateRpcRequestArgs({ method: 123 })).toThrow("'args.method' must be a non-empty string.");
     });
 
     it("should throw an error if method is an empty string", () => {
-      expect(() => validateRpcRequestArgs({ method: "" })).toThrow(
-        "'args.method' must be a non-empty string.",
-      );
+      expect(() => validateRpcRequestArgs({ method: "" })).toThrow("'args.method' must be a non-empty string.");
     });
 
     it("should throw an error if params is not an object or array", () => {
-      expect(() =>
-        validateRpcRequestArgs({ method: "testMethod", params: 123 }),
-      ).toThrow("'args.params' must be an object or array if provided.");
+      expect(() => validateRpcRequestArgs({ method: "testMethod", params: 123 })).toThrow(
+        "'args.params' must be an object or array if provided.",
+      );
     });
 
     it("should not throw an error for a valid request with an array params", () => {
-      expect(() =>
-        validateRpcRequestArgs({ method: "testMethod", params: [] }),
-      ).not.toThrow();
+      expect(() => validateRpcRequestArgs({ method: "testMethod", params: [] })).not.toThrow();
     });
 
     it("should not throw an error for a valid request with an object params", () => {
@@ -72,9 +53,7 @@ describe("Provider utils", () => {
     });
 
     it("should not throw an error for a valid request without params", () => {
-      expect(() =>
-        validateRpcRequestArgs({ method: "testMethod" }),
-      ).not.toThrow();
+      expect(() => validateRpcRequestArgs({ method: "testMethod" })).not.toThrow();
     });
   });
 
