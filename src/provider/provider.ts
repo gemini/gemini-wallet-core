@@ -1,9 +1,4 @@
-import {
-  errorCodes,
-  providerErrors,
-  rpcErrors,
-  serializeError,
-} from "@metamask/rpc-errors";
+import { errorCodes, providerErrors, rpcErrors, serializeError } from "@metamask/rpc-errors";
 import {
   type Address,
   type Hex,
@@ -13,29 +8,13 @@ import {
 } from "viem";
 
 import { DEFAULT_CHAIN_ID } from "../constants";
-import {
-  GeminiStorage,
-  STORAGE_ETH_ACCOUNTS_KEY,
-  STORAGE_ETH_ACTIVE_CHAIN_KEY,
-} from "../storage";
-import {
-  type GeminiProviderConfig,
-  ProviderEventEmitter,
-  type ProviderInterface,
-  type RpcRequestArgs,
-} from "../types";
+import { GeminiStorage, STORAGE_ETH_ACCOUNTS_KEY, STORAGE_ETH_ACTIVE_CHAIN_KEY } from "../storage";
+import { type GeminiProviderConfig, ProviderEventEmitter, type ProviderInterface, type RpcRequestArgs } from "../types";
 import { hexStringFromNumber } from "../utils";
 import { GeminiWallet } from "../wallets";
-import {
-  convertSendValuesToBigInt,
-  fetchRpcRequest,
-  validateRpcRequestArgs,
-} from "./provider.utils";
+import { convertSendValuesToBigInt, fetchRpcRequest, validateRpcRequestArgs } from "./provider.utils";
 
-export class GeminiWalletProvider
-  extends ProviderEventEmitter
-  implements ProviderInterface
-{
+export class GeminiWalletProvider extends ProviderEventEmitter implements ProviderInterface {
   private readonly config: GeminiProviderConfig;
   private wallet: GeminiWallet | null = null;
 
@@ -133,9 +112,7 @@ export class GeminiWalletProvider
           break;
         case "wallet_switchEthereumChain": {
           // Handle both standard EIP-3326 format [{ chainId: hex }] and legacy format { id: number }
-          const rawParams = args.params as
-            | [{ chainId: string }]
-            | { id: number };
+          const rawParams = args.params as [{ chainId: string }] | { id: number };
           let chainId: number;
 
           if (Array.isArray(rawParams) && rawParams[0]?.chainId) {
@@ -171,9 +148,7 @@ export class GeminiWalletProvider
         case "eth_signTypedData_v4":
         case "eth_signTypedData": {
           requestParams = args.params as Array<Hex | Address>;
-          const signedTypedDataParams = JSON.parse(
-            requestParams[1] as string,
-          ) as SignTypedDataParameters;
+          const signedTypedDataParams = JSON.parse(requestParams[1] as string) as SignTypedDataParameters;
           response = await this.wallet.signTypedData({
             account: requestParams[0] as Address,
             domain: signedTypedDataParams.domain,
@@ -211,9 +186,7 @@ export class GeminiWalletProvider
         // call rpc directly for everything else
         default:
           if (!this.wallet.chain.rpcUrl)
-            throw rpcErrors.internal(
-              `RPC URL missing for current chain (${this.wallet.chain.id})`,
-            );
+            throw rpcErrors.internal(`RPC URL missing for current chain (${this.wallet.chain.id})`);
           return fetchRpcRequest(args, this.wallet.chain.rpcUrl);
       }
 

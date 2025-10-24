@@ -3,16 +3,12 @@ import type { Address } from "viem";
 import { ENS_API_URL } from "@/constants";
 import type { ReverseEnsResponse } from "@/types";
 
-export async function reverseResolveEns(
-  address: Address,
-): Promise<ReverseEnsResponse> {
+export async function reverseResolveEns(address: Address): Promise<ReverseEnsResponse> {
   try {
     const response = await fetch(`${ENS_API_URL}/reverse/${address}`);
 
     if (!response.ok) {
-      throw new Error(
-        `ENS API request failed: ${response.status} ${response.statusText}`,
-      );
+      throw new Error(`ENS API request failed: ${response.status} ${response.statusText}`);
     }
 
     const data: ReverseEnsResponse = await response.json();

@@ -1,16 +1,8 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { type Address } from "viem";
 
-import {
-  DEFAULT_CHAIN_ID,
-  getDefaultRpcUrl,
-  SUPPORTED_CHAIN_IDS,
-} from "../constants";
-import {
-  GeminiStorage,
-  STORAGE_ETH_ACCOUNTS_KEY,
-  STORAGE_ETH_ACTIVE_CHAIN_KEY,
-} from "../storage";
+import { DEFAULT_CHAIN_ID, getDefaultRpcUrl, SUPPORTED_CHAIN_IDS } from "../constants";
+import { GeminiStorage, STORAGE_ETH_ACCOUNTS_KEY, STORAGE_ETH_ACTIVE_CHAIN_KEY } from "../storage";
 import {
   type Chain,
   type ConnectResponse,
@@ -23,10 +15,8 @@ import { isChainSupportedByGeminiSw } from "./wallet";
 
 // Test constants
 const mockAddress = "0xAfEDA61dB9e162293b2eF2C2bC5A800b37Bb5E4a" as Address;
-const mockTxHash =
-  "0x5de3752c591ecc35d1046f3aca2eba1ba5bdcfb786639a8661e9ecb823675743";
-const mockSigHash =
-  "0x020d671b80fbd20466d8cb65cef79a24e3bca3fdf82e9dd89d78e7a4c4c045b";
+const mockTxHash = "0x5de3752c591ecc35d1046f3aca2eba1ba5bdcfb786639a8661e9ecb823675743";
+const mockSigHash = "0x020d671b80fbd20466d8cb65cef79a24e3bca3fdf82e9dd89d78e7a4c4c045b";
 
 // Set up global window mock for this test file only
 (global as any).window = {
@@ -53,7 +43,7 @@ describe("GeminiWallet - Unit Tests", () => {
 
   describe("isChainSupportedByGeminiSw", () => {
     it("should return true for all supported chains", () => {
-      SUPPORTED_CHAIN_IDS.forEach((chainId) => {
+      SUPPORTED_CHAIN_IDS.forEach(chainId => {
         expect(isChainSupportedByGeminiSw(chainId)).toBe(true);
       });
     });
@@ -112,10 +102,7 @@ describe("GeminiWallet - Unit Tests", () => {
 
       await mockStorage.storeObject(STORAGE_ETH_ACCOUNTS_KEY, accounts);
 
-      expect(mockStorage.storeObject).toHaveBeenCalledWith(
-        STORAGE_ETH_ACCOUNTS_KEY,
-        accounts,
-      );
+      expect(mockStorage.storeObject).toHaveBeenCalledWith(STORAGE_ETH_ACCOUNTS_KEY, accounts);
     });
 
     it("should store chain to storage", async () => {
@@ -123,22 +110,13 @@ describe("GeminiWallet - Unit Tests", () => {
 
       await mockStorage.storeObject(STORAGE_ETH_ACTIVE_CHAIN_KEY, chain);
 
-      expect(mockStorage.storeObject).toHaveBeenCalledWith(
-        STORAGE_ETH_ACTIVE_CHAIN_KEY,
-        chain,
-      );
+      expect(mockStorage.storeObject).toHaveBeenCalledWith(STORAGE_ETH_ACTIVE_CHAIN_KEY, chain);
     });
 
     it("should load accounts from storage", async () => {
-      const accounts = await mockStorage.loadObject(
-        STORAGE_ETH_ACCOUNTS_KEY,
-        [],
-      );
+      const accounts = await mockStorage.loadObject(STORAGE_ETH_ACCOUNTS_KEY, []);
 
-      expect(mockStorage.loadObject).toHaveBeenCalledWith(
-        STORAGE_ETH_ACCOUNTS_KEY,
-        [],
-      );
+      expect(mockStorage.loadObject).toHaveBeenCalledWith(STORAGE_ETH_ACCOUNTS_KEY, []);
       expect(accounts).toEqual([]);
     });
 
@@ -147,10 +125,7 @@ describe("GeminiWallet - Unit Tests", () => {
         id: DEFAULT_CHAIN_ID,
       });
 
-      expect(mockStorage.loadObject).toHaveBeenCalledWith(
-        STORAGE_ETH_ACTIVE_CHAIN_KEY,
-        { id: DEFAULT_CHAIN_ID },
-      );
+      expect(mockStorage.loadObject).toHaveBeenCalledWith(STORAGE_ETH_ACTIVE_CHAIN_KEY, { id: DEFAULT_CHAIN_ID });
       expect(chain.id).toBe(DEFAULT_CHAIN_ID);
     });
   });

@@ -47,10 +47,7 @@ export default [
       "@typescript-eslint/no-empty-function": 0,
       "@typescript-eslint/no-empty-interface": 0,
       "@typescript-eslint/no-explicit-any": 0,
-      "@typescript-eslint/no-unused-vars": [
-        2,
-        { args: "none", vars: "local", varsIgnorePattern: "[uU]nused" },
-      ],
+      "@typescript-eslint/no-unused-vars": [2, { args: "none", vars: "local", varsIgnorePattern: "[uU]nused" }],
       "@typescript-eslint/no-useless-constructor": 2,
       "@typescript-eslint/no-var-requires": 0,
       eqeqeq: ["error", "always", { null: "ignore" }],
@@ -75,10 +72,7 @@ export default [
       "no-dupe-class-members": "error",
       "no-duplicate-case": "error",
       "no-duplicate-imports": "error",
-      "no-implicit-coercion": [
-        2,
-        { boolean: true, number: true, string: true },
-      ],
+      "no-implicit-coercion": [2, { boolean: true, number: true, string: true }],
       "no-undef": "error",
       "no-unused-vars": 0,
       "no-useless-constructor": "error",
@@ -128,13 +122,7 @@ export default [
             ["^@/app(/.*)?$", "^@gemini-wallet(/.*)?$"],
 
             // Relative imports
-            [
-              "^\\.\\.(?!/?$)",
-              "^\\./(?=.*/)(?!/?$)",
-              "^\\.(?!/?$)",
-              "^\\.\\./?$",
-              "^\\./?$",
-            ],
+            ["^\\.\\.(?!/?$)", "^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\.\\./?$", "^\\./?$"],
 
             // Style imports
             ["^.+\\.s?css$"],
