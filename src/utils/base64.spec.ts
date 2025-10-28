@@ -1,12 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import {
-  base64ToHex,
-  bufferToBase64URLString,
-  decodeBase64,
-  encodeBase64,
-  utf8StringToBuffer,
-} from "./base64";
+import { base64ToHex, bufferToBase64URLString, decodeBase64, encodeBase64, utf8StringToBuffer } from "./base64";
 
 describe("Base64 utilities", () => {
   describe("encodeBase64", () => {
@@ -197,7 +191,7 @@ describe("Base64 utilities", () => {
       const input = "a".repeat(10000);
       const result = utf8StringToBuffer(input);
       expect(result.length).toBe(10000);
-      expect(Array.from(result).every((b) => b === 97)).toBe(true); // 'a' = 97 in ASCII
+      expect(Array.from(result).every(b => b === 97)).toBe(true); // 'a' = 97 in ASCII
     });
   });
 
@@ -263,9 +257,7 @@ describe("Base64 utilities", () => {
 
     it("should be consistent with encodeBase64 and decodeBase64", () => {
       const original = "48656c6c6f"; // "Hello" in hex
-      const bytes = new Uint8Array(
-        original.match(/.{2}/g)!.map((byte) => parseInt(byte, 16)),
-      );
+      const bytes = new Uint8Array(original.match(/.{2}/g)!.map(byte => parseInt(byte, 16)));
       const base64 = encodeBase64(bytes);
       const resultHex = base64ToHex(base64);
 
@@ -291,14 +283,7 @@ describe("Base64 utilities", () => {
     });
 
     it("should maintain string data through utf8/base64 conversion", () => {
-      const testStrings = [
-        "",
-        "Hello",
-        "Hello World!",
-        "Special chars: @#$%^&*()",
-        "UTF-8: 你好世界",
-        "Emoji: 😀🎉🚀",
-      ];
+      const testStrings = ["", "Hello", "Hello World!", "Special chars: @#$%^&*()", "UTF-8: 你好世界", "Emoji: 😀🎉🚀"];
 
       for (const original of testStrings) {
         const buffer = utf8StringToBuffer(original);
@@ -321,9 +306,7 @@ describe("Base64 utilities", () => {
         const hex = base64ToHex(base64);
 
         // Convert hex back to bytes
-        const bytes = new Uint8Array(
-          hex.match(/.{2}/g)!.map((byte) => parseInt(byte, 16)),
-        );
+        const bytes = new Uint8Array(hex.match(/.{2}/g)!.map(byte => parseInt(byte, 16)));
         expect(Array.from(bytes)).toEqual(Array.from(original));
       }
     });

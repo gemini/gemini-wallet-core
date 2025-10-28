@@ -20,10 +20,7 @@ export class Communicator {
   private readonly appMetadata: AppMetadata;
   private readonly url: URL;
   private popup: Window | null = null;
-  private listeners = new Map<
-    (_: MessageEvent) => void,
-    { reject: (_: Error) => void }
-  >();
+  private listeners = new Map<(_: MessageEvent) => void, { reject: (_: Error) => void }>();
   private onDisconnectCallback?: () => void;
 
   constructor({ appMetadata, onDisconnectCallback }: CommunicatorConfigParams) {
@@ -39,15 +36,10 @@ export class Communicator {
   };
 
   // posts a request to the popup window and waits for a response
-  postRequestAndWaitForResponse = async <
-    M extends GeminiSdkMessage,
-    R extends GeminiSdkMessageResponse,
-  >(
+  postRequestAndWaitForResponse = async <M extends GeminiSdkMessage, R extends GeminiSdkMessageResponse>(
     request: GeminiSdkMessage,
   ): Promise<R> => {
-    const responsePromise = this.onMessage<M, R>(
-      ({ requestId }) => requestId === request.requestId,
-    );
+    const responsePromise = this.onMessage<M, R>(({ requestId }) => requestId === request.requestId);
     this.postMessage(request);
     return await responsePromise;
   };
@@ -97,16 +89,12 @@ export class Communicator {
     this.popup = openPopup(this.url);
 
     // setup popup closed listener in case user closes window without explicit response
-    this.onMessage<GeminiSdkMessage, GeminiSdkMessageResponse>(
-      ({ event }) => event === GeminiSdkEvent.POPUP_UNLOADED,
-    )
+    this.onMessage<GeminiSdkMessage, GeminiSdkMessageResponse>(({ event }) => event === GeminiSdkEvent.POPUP_UNLOADED)
       .then(this.onRequestCancelled)
       .catch(() => {});
 
     // setup account disconnect listener in case user requests disconnect from within popup
-    this.onMessage<GeminiSdkMessage, GeminiSdkMessageResponse>(
-      ({ event }) => event === GeminiSdkEvent.SDK_DISCONNECT,
-    )
+    this.onMessage<GeminiSdkMessage, GeminiSdkMessageResponse>(({ event }) => event === GeminiSdkEvent.SDK_DISCONNECT)
       .then(() => {
         // invoke disconnect callback passed in from wallet
         this.onDisconnectCallback?.();
@@ -118,7 +106,7 @@ export class Communicator {
     return this.onMessage<GeminiSdkMessage, GeminiSdkMessageResponse>(
       ({ event }) => event === GeminiSdkEvent.POPUP_LOADED,
     )
-      .then((message) => {
+      .then(message => {
         // report app metadata to backend upon load complete
         this.postMessage({
           chainId: DEFAULT_CHAIN_ID,
