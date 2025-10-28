@@ -1,22 +1,9 @@
 import { providerErrors } from "@metamask/rpc-errors";
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  mock,
-  spyOn,
-} from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
 
 import { Communicator } from "./communicator";
 import { DEFAULT_CHAIN_ID } from "./constants";
-import {
-  AppMetadata,
-  GeminiSdkEvent,
-  GeminiSdkMessage,
-  GeminiSdkMessageResponse,
-} from "./types";
+import { AppMetadata, GeminiSdkEvent, GeminiSdkMessage, GeminiSdkMessageResponse } from "./types";
 import { SDK_BACKEND_URL, SDK_VERSION } from "./utils";
 
 // Set up global window mock before tests
@@ -51,12 +38,9 @@ describe("Communicator", () => {
   let messageListeners: Array<(event: MessageEvent) => void> = [];
 
   // Helper to simulate message events
-  const simulateMessage = (
-    data: any,
-    origin: string = new URL(SDK_BACKEND_URL).origin,
-  ) => {
+  const simulateMessage = (data: any, origin: string = new URL(SDK_BACKEND_URL).origin) => {
     const event = new MessageEvent("message", { data, origin });
-    messageListeners.forEach((listener) => listener(event));
+    messageListeners.forEach(listener => listener(event));
   };
 
   beforeEach(() => {
@@ -68,24 +52,20 @@ describe("Communicator", () => {
     mockPopup.closed = false;
 
     // Mock window event listeners
-    spyOn(window, "addEventListener").mockImplementation(
-      (event: string, listener: any) => {
-        if (event === "message") {
-          messageListeners.push(listener);
-        }
-      },
-    );
+    spyOn(window, "addEventListener").mockImplementation((event: string, listener: any) => {
+      if (event === "message") {
+        messageListeners.push(listener);
+      }
+    });
 
-    spyOn(window, "removeEventListener").mockImplementation(
-      (event: string, listener: any) => {
-        if (event === "message") {
-          const index = messageListeners.indexOf(listener);
-          if (index > -1) {
-            messageListeners.splice(index, 1);
-          }
+    spyOn(window, "removeEventListener").mockImplementation((event: string, listener: any) => {
+      if (event === "message") {
+        const index = messageListeners.indexOf(listener);
+        if (index > -1) {
+          messageListeners.splice(index, 1);
         }
-      },
-    );
+      }
+    });
 
     appMetadata = {
       appIcon: "https://test.com/icon.png",
@@ -217,10 +197,7 @@ describe("Communicator", () => {
       };
 
       await communicator.postMessage(message);
-      expect(mockPopup.postMessage).toHaveBeenCalledWith(
-        message,
-        new URL(SDK_BACKEND_URL).origin,
-      );
+      expect(mockPopup.postMessage).toHaveBeenCalledWith(message, new URL(SDK_BACKEND_URL).origin);
     });
   });
 
@@ -242,10 +219,9 @@ describe("Communicator", () => {
         requestId: "test-request-123",
       };
 
-      const responsePromise = communicator.postRequestAndWaitForResponse<
-        GeminiSdkMessage,
-        GeminiSdkMessageResponse
-      >(request);
+      const responsePromise = communicator.postRequestAndWaitForResponse<GeminiSdkMessage, GeminiSdkMessageResponse>(
+        request,
+      );
 
       // Simulate response
       const response: GeminiSdkMessageResponse = {
@@ -279,10 +255,9 @@ describe("Communicator", () => {
         requestId: "correct-id",
       };
 
-      const responsePromise = communicator.postRequestAndWaitForResponse<
-        GeminiSdkMessage,
-        GeminiSdkMessageResponse
-      >(request);
+      const responsePromise = communicator.postRequestAndWaitForResponse<GeminiSdkMessage, GeminiSdkMessageResponse>(
+        request,
+      );
 
       // Send wrong response
       simulateMessage({
@@ -305,10 +280,9 @@ describe("Communicator", () => {
 
   describe("onMessage", () => {
     it("should filter messages by predicate", async () => {
-      const messagePromise = communicator.onMessage<
-        GeminiSdkMessage,
-        GeminiSdkMessageResponse
-      >((message) => message.event === GeminiSdkEvent.SDK_CONNECT_RESPONSE);
+      const messagePromise = communicator.onMessage<GeminiSdkMessage, GeminiSdkMessageResponse>(
+        message => message.event === GeminiSdkEvent.SDK_CONNECT_RESPONSE,
+      );
 
       // Send non-matching message
       simulateMessage({
@@ -329,10 +303,9 @@ describe("Communicator", () => {
     });
 
     it("should ignore messages from wrong origin", async () => {
-      const messagePromise = communicator.onMessage<
-        GeminiSdkMessage,
-        GeminiSdkMessageResponse
-      >((message) => message.event === GeminiSdkEvent.SDK_CONNECT_RESPONSE);
+      const messagePromise = communicator.onMessage<GeminiSdkMessage, GeminiSdkMessageResponse>(
+        message => message.event === GeminiSdkEvent.SDK_CONNECT_RESPONSE,
+      );
 
       // Send from wrong origin
       simulateMessage(
@@ -356,10 +329,9 @@ describe("Communicator", () => {
     it("should remove listener after message received", async () => {
       const initialListenerCount = messageListeners.length;
 
-      const messagePromise = communicator.onMessage<
-        GeminiSdkMessage,
-        GeminiSdkMessageResponse
-      >((message) => message.event === GeminiSdkEvent.SDK_CONNECT_RESPONSE);
+      const messagePromise = communicator.onMessage<GeminiSdkMessage, GeminiSdkMessageResponse>(
+        message => message.event === GeminiSdkEvent.SDK_CONNECT_RESPONSE,
+      );
 
       // Should have added a listener
       expect(messageListeners.length).toBe(initialListenerCount + 1);
@@ -393,7 +365,7 @@ describe("Communicator", () => {
       });
 
       // Wait for event processing
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await new Promise(resolve => setTimeout(resolve, 10));
 
       expect(onDisconnectCallback).toHaveBeenCalled();
     });
@@ -408,10 +380,9 @@ describe("Communicator", () => {
       await popupPromise;
 
       // Start a pending request
-      const pendingPromise = communicator.onMessage<
-        GeminiSdkMessage,
-        GeminiSdkMessageResponse
-      >((message) => message.event === ("WILL_NEVER_ARRIVE" as any));
+      const pendingPromise = communicator.onMessage<GeminiSdkMessage, GeminiSdkMessageResponse>(
+        message => message.event === ("WILL_NEVER_ARRIVE" as any),
+      );
 
       // Simulate popup unloaded
       simulateMessage({
@@ -437,19 +408,17 @@ describe("Communicator", () => {
       await popupPromise;
 
       // Add multiple listeners - create promises but don't await yet
-      const promise1 = communicator.onMessage<
-        GeminiSdkMessage,
-        GeminiSdkMessageResponse
-      >((message) => message.event === ("EVENT1" as any));
-      const promise2 = communicator.onMessage<
-        GeminiSdkMessage,
-        GeminiSdkMessageResponse
-      >((message) => message.event === ("EVENT2" as any));
+      const promise1 = communicator.onMessage<GeminiSdkMessage, GeminiSdkMessageResponse>(
+        message => message.event === ("EVENT1" as any),
+      );
+      const promise2 = communicator.onMessage<GeminiSdkMessage, GeminiSdkMessageResponse>(
+        message => message.event === ("EVENT2" as any),
+      );
 
       // Collect rejection errors
       const errors: any[] = [];
-      promise1.catch((err) => errors.push(err));
-      promise2.catch((err) => errors.push(err));
+      promise1.catch(err => errors.push(err));
+      promise2.catch(err => errors.push(err));
 
       const initialListenerCount = messageListeners.length;
       expect(initialListenerCount).toBeGreaterThan(0);
@@ -461,7 +430,7 @@ describe("Communicator", () => {
       });
 
       // Wait for cleanup and error propagation
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise(resolve => setTimeout(resolve, 50));
 
       // Both promises should have rejected with user rejection error
       expect(errors.length).toBe(2);
@@ -481,10 +450,9 @@ describe("Communicator", () => {
       await popupPromise;
 
       // Start a request that will be rejected
-      const pendingPromise = communicator.onMessage<
-        GeminiSdkMessage,
-        GeminiSdkMessageResponse
-      >((message) => message.event === ("WILL_NEVER_ARRIVE" as any));
+      const pendingPromise = communicator.onMessage<GeminiSdkMessage, GeminiSdkMessageResponse>(
+        message => message.event === ("WILL_NEVER_ARRIVE" as any),
+      );
 
       // Force rejection by simulating unload
       simulateMessage({

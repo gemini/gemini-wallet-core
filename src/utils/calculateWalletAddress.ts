@@ -49,17 +49,13 @@ const V1_CONTRACT_ADDRESSES = {
  */
 function processWalletAddressParams(
   params: CalculateWalletAddressParams,
-  contractAddresses:
-    | typeof V1_CONTRACT_ADDRESSES
-    | typeof V2_CONTRACT_ADDRESSES,
+  contractAddresses: typeof V1_CONTRACT_ADDRESSES | typeof V2_CONTRACT_ADDRESSES,
 ): Address {
   const { publicKey, credentialId, index = 0n } = params;
 
   // Validate input
   if (!publicKey.startsWith("0x") || publicKey.length !== 130) {
-    throw new Error(
-      "Invalid public key: must be 64-byte hex string (0x + 128 chars)",
-    );
+    throw new Error("Invalid public key: must be 64-byte hex string (0x + 128 chars)");
   }
 
   // Extract X and Y coordinates
@@ -74,9 +70,7 @@ function processWalletAddressParams(
 
   // Validate the key is on the secp256r1 curve
   if (!validateWebAuthnKey(webAuthnData)) {
-    throw new Error(
-      "Invalid WebAuthn key: coordinates are not on secp256r1 curve",
-    );
+    throw new Error("Invalid WebAuthn key: coordinates are not on secp256r1 curve");
   }
 
   // Calculate authenticator ID hash from credential ID
@@ -95,9 +89,7 @@ function processWalletAddressParams(
  * Calculate smart wallet address from public key and credential ID (V2)
  * This handles all validation and setup internally
  */
-export function calculateWalletAddress(
-  params: CalculateWalletAddressParams,
-): Address {
+export function calculateWalletAddress(params: CalculateWalletAddressParams): Address {
   return processWalletAddressParams(params, V2_CONTRACT_ADDRESSES);
 }
 
@@ -105,9 +97,7 @@ export function calculateWalletAddress(
  * Calculate smart wallet address from public key and credential ID (V1)
  * This handles all validation and setup internally
  */
-export function calculateV1Address(
-  params: CalculateWalletAddressParams,
-): Address {
+export function calculateV1Address(params: CalculateWalletAddressParams): Address {
   return processWalletAddressParams(params, V1_CONTRACT_ADDRESSES);
 }
 
@@ -132,23 +122,14 @@ export function generateAuthenticatorIdHash(credentialId: string): Hex {
  * Validate WebAuthn public key offchain
  * Mirrors the contract's _validateWebAuthnKey function
  */
-export function validateWebAuthnKey(
-  webAuthnData: WebAuthnValidatorData,
-): boolean {
-  const SECP256R1_P =
-    0xffffffff00000001000000000000000000000000ffffffffffffffffffffffffn;
-  const SECP256R1_B =
-    0x5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604bn;
+export function validateWebAuthnKey(webAuthnData: WebAuthnValidatorData): boolean {
+  const SECP256R1_P = 0xffffffff00000001000000000000000000000000ffffffffffffffffffffffffn;
+  const SECP256R1_B = 0x5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604bn;
 
   const { pubKeyX, pubKeyY } = webAuthnData;
 
   // Check if coordinates are valid
-  if (
-    pubKeyX === 0n ||
-    pubKeyY === 0n ||
-    pubKeyX >= SECP256R1_P ||
-    pubKeyY >= SECP256R1_P
-  ) {
+  if (pubKeyX === 0n || pubKeyY === 0n || pubKeyX >= SECP256R1_P || pubKeyY >= SECP256R1_P) {
     return false;
   }
 
@@ -168,12 +149,9 @@ function calculateAddressInternal(params: {
   webAuthnData: WebAuthnValidatorData;
   authenticatorIdHash: Hex;
   index: bigint;
-  contractAddresses:
-    | typeof V1_CONTRACT_ADDRESSES
-    | typeof V2_CONTRACT_ADDRESSES;
+  contractAddresses: typeof V1_CONTRACT_ADDRESSES | typeof V2_CONTRACT_ADDRESSES;
 }): Address {
-  const { webAuthnData, authenticatorIdHash, index, contractAddresses } =
-    params;
+  const { webAuthnData, authenticatorIdHash, index, contractAddresses } = params;
 
   // Use provided contract addresses
   const factoryAddress = contractAddresses.FACTORY;
@@ -239,30 +217,17 @@ function calculateAddressInternal(params: {
   });
 
   // Format initialization data as expected by ProxyLib
-  const initData = encodeAbiParameters(
-    [{ type: "address" }, { type: "bytes" }],
-    [bootstrapper, bootstrapCall],
-  );
+  const initData = encodeAbiParameters([{ type: "address" }, { type: "bytes" }], [bootstrapper, bootstrapCall]);
 
   // Calculate CREATE2 address using the same logic as ProxyLib.predictProxyAddress
-  return predictProxyAddress(
-    accountImplementation,
-    salt,
-    initData,
-    factoryAddress,
-  );
+  return predictProxyAddress(accountImplementation, salt, initData, factoryAddress);
 }
 
 /**
  * Predicts the proxy address using CREATE2
  * Mirrors ProxyLib.predictProxyAddress functionality exactly
  */
-function predictProxyAddress(
-  implementation: Address,
-  salt: Hex,
-  initData: Hex,
-  deployer: Address,
-): Address {
+function predictProxyAddress(implementation: Address, salt: Hex, initData: Hex, deployer: Address): Address {
   // Encode the call to INexus.initializeAccount with initData
   const initializeCall = encodeFunctionData({
     abi: [
@@ -286,9 +251,7 @@ function predictProxyAddress(
   const nexusProxyCreationCode =
     "0x60806040526102c8803803806100148161018c565b92833981016040828203126101885781516001600160a01b03811692909190838303610188576020810151906001600160401b03821161018857019281601f8501121561018857835161006e610069826101c5565b61018c565b9481865260208601936020838301011161018857815f926020809301865e8601015260017f90b772c2cb8a51aa7a8a65fc23543c6d022d5b3f8e2b92eed79fba7eef8293005d823b15610176577f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc80546001600160a01b031916821790557fbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b5f80a282511561015e575f8091610146945190845af43d15610156573d91610137610069846101c5565b9283523d5f602085013e6101e0565b505b6040516089908161023f8239f35b6060916101e0565b50505034156101485763b398979f60e01b5f5260045ffd5b634c9c8ce360e01b5f5260045260245ffd5b5f80fd5b6040519190601f01601f191682016001600160401b038111838210176101b157604052565b634e487b7160e01b5f52604160045260245ffd5b6001600160401b0381116101b157601f01601f191660200190565b9061020457508051156101f557805190602001fd5b63d6bda27560e01b5f5260045ffd5b81511580610235575b610215575090565b639996b31560e01b5f9081526001600160a01b0391909116600452602490fd5b50803b1561020d56fe608060405236156051577f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc545f9081906001600160a01b0316368280378136915af43d5f803e15604d573d5ff35b3d5ffd5b00fea264697066735822122041b5f70a351952142223f22504ca7b4e6d975f3a302d114ff820442fcf815ac264736f6c634300081b0033" as const;
 
-  const initCodeHash = keccak256(
-    encodePacked(["bytes", "bytes"], [nexusProxyCreationCode, constructorArgs]),
-  );
+  const initCodeHash = keccak256(encodePacked(["bytes", "bytes"], [nexusProxyCreationCode, constructorArgs]));
 
   // Standard CREATE2 formula
   return getCreate2Address({

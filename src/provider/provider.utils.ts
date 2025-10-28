@@ -9,10 +9,7 @@ import type { RpcRequestArgs } from "../types";
  * @param rpcUrl The url of the RPC.
  * @returns Response from the RPC call.
  */
-export const fetchRpcRequest = async (
-  request: RpcRequestArgs,
-  rpcUrl: string,
-) => {
+export const fetchRpcRequest = async (request: RpcRequestArgs, rpcUrl: string) => {
   const requestBody = {
     ...request,
     id: window?.crypto?.randomUUID(),
@@ -37,9 +34,7 @@ export const fetchRpcRequest = async (
  * @param args The request arguments to validate.
  * @returns An error object if the arguments are invalid, otherwise undefined.
  */
-export function validateRpcRequestArgs(
-  args: unknown,
-): asserts args is RpcRequestArgs {
+export function validateRpcRequestArgs(args: unknown): asserts args is RpcRequestArgs {
   if (!args || typeof args !== "object" || Array.isArray(args)) {
     throw rpcErrors.invalidParams({
       message: "Expected a single, non-array, object argument.",
@@ -54,11 +49,7 @@ export function validateRpcRequestArgs(
     });
   }
 
-  if (
-    params !== undefined &&
-    !Array.isArray(params) &&
-    (typeof params !== "object" || params === null)
-  ) {
+  if (params !== undefined && !Array.isArray(params) && (typeof params !== "object" || params === null)) {
     throw rpcErrors.invalidParams({
       message: "'args.params' must be an object or array if provided.",
     });
@@ -70,9 +61,7 @@ export function validateRpcRequestArgs(
  * @param tx The raw transaction request object.
  * @returns The raw transaction object with certain fields converted to BigInts
  */
-export function convertSendValuesToBigInt(
-  tx: TransactionRequest,
-): TransactionRequest {
+export function convertSendValuesToBigInt(tx: TransactionRequest): TransactionRequest {
   const FIELDS_TO_NORMALIZE: (keyof Pick<
     TransactionRequest,
     "value" | "gas" | "gasPrice" | "maxPriorityFeePerGas" | "maxFeePerGas"

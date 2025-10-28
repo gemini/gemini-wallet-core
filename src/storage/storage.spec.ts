@@ -1,16 +1,8 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  mock,
-  spyOn,
-} from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
 
 // Mock dependencies
 mock.module("../utils", () => ({
-  safeJsonStringify: mock((obj) => JSON.stringify(obj)),
+  safeJsonStringify: mock(obj => JSON.stringify(obj)),
 }));
 
 import { safeJsonStringify } from "../utils";
@@ -67,10 +59,7 @@ describe("GeminiStorage", () => {
 
       // Test the scopedKey method indirectly
       await storage.setItem("test", "value");
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        "@gemini.wallet.test",
-        "value",
-      );
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith("@gemini.wallet.test", "value");
     });
   });
 
@@ -82,10 +71,7 @@ describe("GeminiStorage", () => {
       await storage.storeObject("testKey", testObject);
 
       expect(safeJsonStringify).toHaveBeenCalledWith(testObject);
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        "@gemini.wallet.testKey",
-        JSON.stringify(testObject),
-      );
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith("@gemini.wallet.testKey", JSON.stringify(testObject));
     });
 
     it("should handle complex objects with bigint values", async () => {
@@ -93,17 +79,12 @@ describe("GeminiStorage", () => {
       const testObject = { id: "test", value: 123n };
 
       // Mock safeJsonStringify for this specific test
-      (safeJsonStringify as any).mockReturnValueOnce(
-        '{"id":"test","value":"123n"}',
-      );
+      (safeJsonStringify as any).mockReturnValueOnce('{"id":"test","value":"123n"}');
 
       await storage.storeObject("testKey", testObject);
 
       expect(safeJsonStringify).toHaveBeenCalledWith(testObject);
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        "@gemini.wallet.testKey",
-        '{"id":"test","value":"123n"}',
-      );
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith("@gemini.wallet.testKey", '{"id":"test","value":"123n"}');
     });
   });
 
@@ -116,9 +97,7 @@ describe("GeminiStorage", () => {
 
       const result = await storage.loadObject("testKey", { default: true });
 
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith(
-        "@gemini.wallet.testKey",
-      );
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith("@gemini.wallet.testKey");
       expect(result).toEqual({ foo: "bar", num: 123 });
     });
 
@@ -130,9 +109,7 @@ describe("GeminiStorage", () => {
 
       const result = await storage.loadObject("nonExistentKey", fallback);
 
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith(
-        "@gemini.wallet.nonExistentKey",
-      );
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith("@gemini.wallet.nonExistentKey");
       expect(result).toEqual(fallback);
     });
 
@@ -144,15 +121,11 @@ describe("GeminiStorage", () => {
       mockLocalStorage.getItem.mockReturnValueOnce("{invalid:json}");
 
       // Mock console.error to avoid test output pollution
-      const consoleErrorSpy = spyOn(console, "error").mockImplementation(
-        () => {},
-      );
+      const consoleErrorSpy = spyOn(console, "error").mockImplementation(() => {});
 
       const result = await storage.loadObject("invalidJsonKey", fallback);
 
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith(
-        "@gemini.wallet.invalidJsonKey",
-      );
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith("@gemini.wallet.invalidJsonKey");
       expect(result).toEqual(fallback);
 
       // Verify error was logged
@@ -168,10 +141,7 @@ describe("GeminiStorage", () => {
 
       await storage.setItem("testKey", "testValue");
 
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        "@gemini.wallet.testKey",
-        "testValue",
-      );
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith("@gemini.wallet.testKey", "testValue");
     });
 
     it("should handle empty string values", async () => {
@@ -179,10 +149,7 @@ describe("GeminiStorage", () => {
 
       await storage.setItem("emptyKey", "");
 
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        "@gemini.wallet.emptyKey",
-        "",
-      );
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith("@gemini.wallet.emptyKey", "");
     });
   });
 
@@ -194,9 +161,7 @@ describe("GeminiStorage", () => {
 
       const result = await storage.getItem("testKey");
 
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith(
-        "@gemini.wallet.testKey",
-      );
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith("@gemini.wallet.testKey");
       expect(result).toBe("testValue");
     });
 
@@ -207,9 +172,7 @@ describe("GeminiStorage", () => {
 
       const result = await storage.getItem("nonExistentKey");
 
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith(
-        "@gemini.wallet.nonExistentKey",
-      );
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith("@gemini.wallet.nonExistentKey");
       expect(result).toBeNull();
     });
   });
@@ -220,9 +183,7 @@ describe("GeminiStorage", () => {
 
       await storage.removeItem("testKey");
 
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
-        "@gemini.wallet.testKey",
-      );
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith("@gemini.wallet.testKey");
     });
   });
 
@@ -234,15 +195,9 @@ describe("GeminiStorage", () => {
       await storage.removeItems(keys);
 
       expect(mockLocalStorage.removeItem).toHaveBeenCalledTimes(3);
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
-        "@gemini.wallet.key1",
-      );
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
-        "@gemini.wallet.key2",
-      );
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
-        "@gemini.wallet.key3",
-      );
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith("@gemini.wallet.key1");
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith("@gemini.wallet.key2");
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith("@gemini.wallet.key3");
     });
 
     it("should handle empty array", async () => {
@@ -259,9 +214,7 @@ describe("GeminiStorage", () => {
       await storage.removeItems(["singleKey"]);
 
       expect(mockLocalStorage.removeItem).toHaveBeenCalledTimes(1);
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
-        "@gemini.wallet.singleKey",
-      );
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith("@gemini.wallet.singleKey");
     });
   });
 
@@ -281,20 +234,13 @@ describe("GeminiStorage", () => {
       const storage = new GeminiStorage();
 
       await storage.setItem(STORAGE_ETH_ACCOUNTS_KEY, "accounts-data");
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        "@gemini.wallet.eth-accounts",
-        "accounts-data",
-      );
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith("@gemini.wallet.eth-accounts", "accounts-data");
 
       await storage.getItem(STORAGE_PASSKEY_CREDENTIAL_KEY);
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith(
-        "@gemini.wallet.passkey-credential",
-      );
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith("@gemini.wallet.passkey-credential");
 
       await storage.removeItem(STORAGE_SETTINGS_KEY);
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
-        "@gemini.wallet.settings",
-      );
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith("@gemini.wallet.settings");
     });
   });
 
