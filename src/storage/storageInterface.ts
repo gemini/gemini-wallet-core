@@ -52,3 +52,4 @@ export const STORAGE_PRESERVED_PASSKEY_CREDENTIALS_KEY = "preserved-passkey-cred
 export const STORAGE_SMART_ACCOUNT_KEY = "smart-account";
 export const STORAGE_SETTINGS_KEY = "settings";
 export const STORAGE_WC_REQUESTS_KEY = "wc-requests";
+export const STORAGE_CALL_BATCHES_KEY = "call-batches";
