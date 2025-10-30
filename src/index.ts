@@ -34,6 +34,7 @@ export type {
   GeminiSdkAppContextMessage,
   GeminiSdkMessage,
   GeminiSdkMessageResponse,
+  GeminiSdkSendBatchCalls,
   GeminiSdkSendTransaction,
   GeminiSdkSignMessage,
   GeminiSdkSignTypedData,

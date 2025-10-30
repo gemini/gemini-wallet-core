@@ -142,6 +142,10 @@ export interface GeminiSdkSignTypedData extends Omit<GeminiSdkMessage, "data"> {
   data: SignTypedDataParameters;
 }
 
+export interface GeminiSdkSendBatchCalls extends Omit<GeminiSdkMessage, "data"> {
+  data: SendCallsParams;
+}
+
 export interface GeminiSdkSwitchChain extends Omit<GeminiSdkMessage, "data"> {
   data: number;
 }
