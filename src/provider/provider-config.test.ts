@@ -8,7 +8,7 @@ describe("GeminiProviderConfig", () => {
   const createMockConfig = (overrides: Partial<GeminiProviderConfig> = {}): GeminiProviderConfig => ({
     appMetadata: {
       description: "Test Description",
-      icons: [],
+      icon: "https://test.com/icon.png",
       name: "Test App",
       url: "https://test.com",
     },
@@ -47,7 +47,7 @@ describe("GeminiProviderConfig", () => {
     const config = createMockConfig({
       appMetadata: {
         description: "Custom Description",
-        icons: ["icon1.png", "icon2.png"],
+        icon: "https://custom.com/icon.png",
         name: "Custom App",
         url: "https://custom.com",
       },

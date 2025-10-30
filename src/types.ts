@@ -27,12 +27,30 @@ export enum GeminiSdkEvent {
 }
 
 export interface AppMetadata {
-  appName?: string;
-  appLogoUrl?: string;
+  /**
+   * The name of your application
+   */
   name?: string;
+  /**
+   * The description of your application (optional)
+   */
   description?: string;
+  /**
+   * URL of your application
+   */
   url?: string;
-  icons?: string[];
+  /**
+   * URL to your application's icon or logo
+   */
+  icon?: string;
+  /**
+   * @deprecated Use `name` instead
+   */
+  appName?: string;
+  /**
+   * @deprecated Use `icon` instead
+   */
+  appLogoUrl?: string;
 }
 
 export interface AppContext {
