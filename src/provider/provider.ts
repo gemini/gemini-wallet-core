@@ -248,7 +248,7 @@ export class GeminiWalletProvider extends ProviderEventEmitter implements Provid
     try {
       return await this.wallet.sendCalls(params);
     } catch (error) {
-      throw rpcErrors.transactionRejected((error as Error).message);
+      throw rpcErrors.transactionRejected(error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -259,7 +259,7 @@ export class GeminiWalletProvider extends ProviderEventEmitter implements Provid
     try {
       return await this.wallet.getCallsStatus(batchId);
     } catch (error) {
-      throw rpcErrors.invalidParams((error as Error).message);
+      throw rpcErrors.invalidParams(error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -270,7 +270,7 @@ export class GeminiWalletProvider extends ProviderEventEmitter implements Provid
     try {
       await this.wallet.showCallsStatus(batchId);
     } catch (error) {
-      throw rpcErrors.invalidParams((error as Error).message);
+      throw rpcErrors.invalidParams(error instanceof Error ? error.message : String(error));
     }
   }
 

@@ -215,7 +215,7 @@ export class GeminiWallet {
     await this.ensureInitialized();
 
     // Generate unique bundle ID
-    const batchId = window?.crypto?.randomUUID() || `batch-${Date.now()}`;
+    const batchId = window?.crypto?.randomUUID() || `batch-${Date.now()}-${Math.random()}`;
 
     // Validate chain ID matches current chain
     const requestedChainId = parseInt(params.chainId, 16);
@@ -328,7 +328,7 @@ export class GeminiWallet {
                 blockHash: receipt.blockHash,
                 blockNumber: receipt.blockNumber,
                 gasUsed: receipt.gasUsed,
-                logs: receipt.logs.map((log: any) => ({
+                logs: receipt.logs.map((log: { address: string; data: string; topics: string[] }) => ({
                   address: log.address,
                   data: log.data,
                   topics: log.topics,
@@ -387,7 +387,6 @@ export class GeminiWallet {
     }
 
     // Open SDK UI to show call status
-    console.log("Show calls status for batch:", batchId, batch);
     // TODO: Implement actual UI showing via communicator
     // For now, this just validates the batch exists
   }
