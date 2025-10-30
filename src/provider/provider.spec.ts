@@ -74,7 +74,7 @@ describe("GeminiWalletProvider", () => {
     mockStorage = new GeminiStorage();
 
     providerConfig = {
-      appMetadata: { appName: "Test App" },
+      appMetadata: { name: "Test App" },
       chain: { id: DEFAULT_CHAIN_ID },
       onDisconnectCallback: mock(),
       storage: mockStorage,

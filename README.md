@@ -45,6 +45,7 @@ const config = createConfig({
       appMetadata: {
         name: "My DApp",
         url: "https://mydapp.com",
+        icon: "https://mydapp.com/icon.png",
       },
     }),
   ],
@@ -71,6 +72,7 @@ const provider = new GeminiWalletProvider({
   appMetadata: {
     name: "My DApp",
     url: "https://mydapp.com",
+    icon: "https://mydapp.com/icon.png",
   },
   chain: { id: 42161 }, // Arbitrum One
 });
@@ -109,6 +111,7 @@ const wallet = new GeminiWallet({
   appMetadata: {
     name: "My DApp",
     url: "https://mydapp.com",
+    icon: "https://mydapp.com/icon.png",
   },
   chain: { id: 42161 },
 });
@@ -140,6 +143,7 @@ const communicator = new Communicator({
   appMetadata: {
     name: "My DApp",
     url: "https://mydapp.com",
+    icon: "https://mydapp.com/icon.png",
   },
 });
 

@@ -68,8 +68,8 @@ describe("Communicator", () => {
     });
 
     appMetadata = {
-      appIcon: "https://test.com/icon.png",
-      appName: "Test App",
+      icon: "https://test.com/icon.png",
+      name: "Test App",
     };
 
     onDisconnectCallback = mock();
