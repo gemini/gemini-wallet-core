@@ -9,7 +9,16 @@ import {
 
 import { DEFAULT_CHAIN_ID } from "../constants";
 import { GeminiStorage, STORAGE_ETH_ACCOUNTS_KEY, STORAGE_ETH_ACTIVE_CHAIN_KEY } from "../storage";
-import { type GeminiProviderConfig, ProviderEventEmitter, type ProviderInterface, type RpcRequestArgs } from "../types";
+import {
+  type GeminiProviderConfig,
+  type GetCallsStatusResponse,
+  ProviderEventEmitter,
+  type ProviderInterface,
+  type RpcRequestArgs,
+  type SendCallsParams,
+  type SendCallsResponse,
+  type WalletCapabilities,
+} from "../types";
 import { hexStringFromNumber } from "../utils";
 import { GeminiWallet } from "../wallets";
 import { convertSendValuesToBigInt, fetchRpcRequest, validateRpcRequestArgs } from "./provider.utils";
@@ -163,6 +172,29 @@ export class GeminiWalletProvider extends ProviderEventEmitter implements Provid
           }
           break;
         }
+        // EIP-5792 Wallet Call API
+        case "wallet_getCapabilities": {
+          const capabilityParams = Array.isArray(args.params) ? args.params : undefined;
+          response = this.getCapabilities(capabilityParams);
+          break;
+        }
+        case "wallet_sendCalls": {
+          requestParams = args.params as [SendCallsParams];
+          response = await this.sendCalls(requestParams[0]);
+          break;
+        }
+        case "wallet_getCallsStatus": {
+          requestParams = args.params as [string];
+          response = await this.getCallsStatus(requestParams[0]);
+          break;
+        }
+        case "wallet_showCallsStatus": {
+          requestParams = args.params as [string];
+          await this.showCallsStatus(requestParams[0]);
+          response = null;
+          break;
+        }
+
         // TODO: not yet implemented or unclear if we support
         case "eth_ecRecover":
         case "eth_subscribe":
@@ -170,10 +202,6 @@ export class GeminiWalletProvider extends ProviderEventEmitter implements Provid
         case "personal_ecRecover":
         case "eth_signTransaction":
         case "wallet_watchAsset":
-        case "wallet_sendCalls":
-        case "wallet_getCallsStatus":
-        case "wallet_getCapabilities":
-        case "wallet_showCallsStatus":
         case "wallet_grantPermissions":
           throw rpcErrors.methodNotSupported("Not yet implemented.");
 
@@ -201,6 +229,49 @@ export class GeminiWalletProvider extends ProviderEventEmitter implements Provid
   // custom wallet function to open settings page
   async openSettings() {
     await this.wallet?.openSettings();
+  }
+
+  // EIP-5792 Implementation Methods - delegating to wallet
+
+  private getCapabilities(params?: readonly unknown[]): WalletCapabilities {
+    if (!this.wallet) {
+      throw providerErrors.unauthorized();
+    }
+    const requestedChainIds = params?.[0] as string[] | undefined;
+    return this.wallet.getCapabilities(requestedChainIds);
+  }
+
+  private async sendCalls(params: SendCallsParams): Promise<SendCallsResponse> {
+    if (!this.wallet) {
+      throw providerErrors.unauthorized();
+    }
+    try {
+      return await this.wallet.sendCalls(params);
+    } catch (error) {
+      throw rpcErrors.transactionRejected((error as Error).message);
+    }
+  }
+
+  private async getCallsStatus(batchId: string): Promise<GetCallsStatusResponse> {
+    if (!this.wallet) {
+      throw providerErrors.unauthorized();
+    }
+    try {
+      return await this.wallet.getCallsStatus(batchId);
+    } catch (error) {
+      throw rpcErrors.invalidParams((error as Error).message);
+    }
+  }
+
+  private async showCallsStatus(batchId: string): Promise<void> {
+    if (!this.wallet) {
+      throw providerErrors.unauthorized();
+    }
+    try {
+      await this.wallet.showCallsStatus(batchId);
+    } catch (error) {
+      throw rpcErrors.invalidParams((error as Error).message);
+    }
   }
 
   async disconnect() {
