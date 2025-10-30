@@ -18,6 +18,12 @@ export enum GeminiSdkEvent {
   SDK_SWITCH_CHAIN = "SDK_SWITCH_CHAIN",
   SDK_OPEN_SETTINGS = "SDK_OPEN_SETTINGS",
   SDK_CURRENT_ACCOUNT = "SDK_CURRENT_ACCOUNT",
+
+  // EIP-5792 events
+  SDK_SEND_BATCH_CALLS = "SDK_SEND_BATCH_CALLS",
+  SDK_GET_CAPABILITIES = "SDK_GET_CAPABILITIES",
+  SDK_GET_CALLS_STATUS = "SDK_GET_CALLS_STATUS",
+  SDK_SHOW_CALLS_STATUS = "SDK_SHOW_CALLS_STATUS",
 }
 
 export interface AppMetadata {
@@ -147,4 +153,72 @@ export interface GeminiSdkAppContextMessage extends Omit<GeminiSdkMessage, "data
 export interface ReverseEnsResponse {
   address: Address;
   name: string | null;
+}
+
+// EIP-5792 Types
+export interface Call {
+  to: Address;
+  value?: Hex;
+  data?: Hex;
+  chainId?: Hex;
+}
+
+export interface SendCallsParams {
+  version: string;
+  chainId: Hex;
+  from: Address;
+  calls: Call[];
+  capabilities?: Record<string, any>;
+}
+
+export interface WalletCapabilities {
+  [chainId: string]: {
+    atomic?: {
+      status: "supported" | "unsupported";
+    };
+    paymasterService?: {
+      supported: boolean;
+    };
+  };
+}
+
+export interface CallBatchMetadata {
+  id: string;
+  chainId: string;
+  from: Address;
+  calls: Call[];
+  transactionHash?: Hex;
+  status: "pending" | "confirmed" | "failed" | "reverted";
+  timestamp: number;
+  capabilities?: Record<string, any>;
+}
+
+export interface GetCallsStatusResponse {
+  version: string;
+  id: string;
+  chainId: Hex;
+  status: 100 | 200 | 400 | 500; // pending, confirmed, offchain failure, reverted
+  atomic: boolean;
+  receipts?: Array<{
+    logs: Array<{
+      address: Address;
+      data: Hex;
+      topics: Hex[];
+    }>;
+    status: "success" | "reverted";
+    blockHash: Hex;
+    blockNumber: Hex;
+    gasUsed: Hex;
+    transactionHash: Hex;
+  }>;
+}
+
+export interface SendCallsResponse {
+  id: string;
+  capabilities?: {
+    caip345?: {
+      caip2: string;
+      transactionHashes: Hex[];
+    };
+  };
 }

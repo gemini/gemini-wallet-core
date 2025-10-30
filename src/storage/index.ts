@@ -1,6 +1,7 @@
 export { GeminiStorage, type GeminiStorageConfig } from "./storage";
 export {
   type IStorage,
+  STORAGE_CALL_BATCHES_KEY,
   STORAGE_ETH_ACCOUNTS_KEY,
   STORAGE_ETH_ACTIVE_CHAIN_KEY,
   STORAGE_PASSKEY_CREDENTIAL_KEY,

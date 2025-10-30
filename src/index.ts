@@ -12,6 +12,7 @@ export { GeminiWallet, isChainSupportedByGeminiSw } from "./wallets";
 export type { GeminiStorageConfig, IStorage } from "./storage";
 export {
   GeminiStorage,
+  STORAGE_CALL_BATCHES_KEY,
   STORAGE_ETH_ACCOUNTS_KEY,
   STORAGE_ETH_ACTIVE_CHAIN_KEY,
   STORAGE_PASSKEY_CREDENTIAL_KEY,
@@ -25,6 +26,8 @@ export {
 export type {
   AppContext,
   AppMetadata,
+  Call,
+  CallBatchMetadata,
   Chain,
   ConnectResponse,
   GeminiProviderConfig,
@@ -35,16 +38,20 @@ export type {
   GeminiSdkSignMessage,
   GeminiSdkSignTypedData,
   GeminiSdkSwitchChain,
+  GetCallsStatusResponse,
   ProviderEventCallback,
   ProviderEventMap,
   ProviderInterface,
   ProviderRpcError,
   ReverseEnsResponse,
   RpcRequestArgs,
+  SendCallsParams,
+  SendCallsResponse,
   SendTransactionResponse,
   SignMessageResponse,
   SignTypedDataResponse,
   SwitchChainResponse,
+  WalletCapabilities,
 } from "./types";
 export { GeminiSdkEvent, PlatformType, ProviderEventEmitter } from "./types";
 
