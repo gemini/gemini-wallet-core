@@ -15,7 +15,7 @@ import packageJson from "../package.json";
 
 const DEFAULT_BACKEND_URL = "https://keys.gemini.com";
 
-export const SDK_BACKEND_URL = (typeof process !== "undefined" && process.env?.SDK_BACKEND_URL) || DEFAULT_BACKEND_URL;
+export const SDK_BACKEND_URL = process.env?.SDK_BACKEND_URL || DEFAULT_BACKEND_URL;
 export const ENS_API_URL = "https://horizon-api.gemini.com/api/ens";
 export const SDK_VERSION = packageJson.version;
 export const DEFAULT_CHAIN_ID = 42161; // Arbitrum One
