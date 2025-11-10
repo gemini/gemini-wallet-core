@@ -194,7 +194,8 @@ export class GeminiWallet {
 
   getCapabilities(requestedChainIds?: string[]): WalletCapabilities {
     const capabilities: WalletCapabilities = {};
-    const chainIds = requestedChainIds?.map(id => parseInt(id, 16)) || [this.chain.id];
+    // Per EIP-5792: when no chain IDs requested, return all supported chains
+    const chainIds = requestedChainIds?.map(id => parseInt(id, 16)) || SUPPORTED_CHAIN_IDS;
 
     for (const chainId of chainIds) {
       const chainIdHex = hexStringFromNumber(chainId);

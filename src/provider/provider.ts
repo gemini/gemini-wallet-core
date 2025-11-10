@@ -237,7 +237,10 @@ export class GeminiWalletProvider extends ProviderEventEmitter implements Provid
     if (!this.wallet) {
       throw providerErrors.unauthorized();
     }
-    const requestedChainIds = params?.[0] as string[] | undefined;
+    // Per EIP-5792: params are [address, [chainIds]] where chainIds is optional
+    // params[0] = address (required but we ignore it as capabilities are wallet-wide)
+    // params[1] = array of chain IDs (optional)
+    const requestedChainIds = params?.[1] as string[] | undefined;
     return this.wallet.getCapabilities(requestedChainIds);
   }
 
