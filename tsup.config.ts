@@ -13,7 +13,7 @@ export default defineConfig({
   esbuildPlugins: [
     replace({
       $SDK_VERSION: pkgJson.version,
-      "process.env?.SDK_BACKEND_URL": `"${process.env.SDK_BACKEND_URL}"`,
+      "process.env?.SDK_BACKEND_URL": process.env.SDK_BACKEND_URL ? `"${process.env.SDK_BACKEND_URL}"` : "undefined",
     }),
   ],
   external: ["@metamask/rpc-errors", "eventemitter3", "viem"],
