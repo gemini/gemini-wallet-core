@@ -178,48 +178,61 @@ export interface ReverseEnsResponse {
 }
 
 // EIP-5792 Types
+export type Capability = {
+  optional?: boolean;
+  [key: string]: unknown;
+};
+
 export interface Call {
   to: Address;
   value?: Hex;
   data?: Hex;
-  chainId?: Hex;
+  capabilities?: Record<string, Capability>;
 }
 
 export interface SendCallsParams {
   version: string;
+  id?: string;
+  from?: Address;
   chainId: Hex;
-  from: Address;
+  atomicRequired: boolean;
   calls: Call[];
-  capabilities?: Record<string, any>;
+  capabilities?: Record<string, Capability>;
 }
 
 export interface WalletCapabilities {
   [chainId: string]: {
     atomic?: {
-      status: "supported" | "unsupported";
+      status: "supported" | "ready" | "unsupported";
     };
     paymasterService?: {
       supported: boolean;
     };
+    [capability: string]: any; // Allow for additional capabilities
   };
 }
 
 export interface CallBatchMetadata {
   id: string;
   chainId: string;
-  from: Address;
+  rpcUrl?: string;
+  from?: Address;
   calls: Call[];
   transactionHash?: Hex;
   status: "pending" | "confirmed" | "failed" | "reverted";
   timestamp: number;
-  capabilities?: Record<string, any>;
+  version: string;
+  atomicRequired: boolean;
+  atomicExecuted: boolean;
+  capabilities?: Record<string, Capability>;
+  receipts?: GetCallsStatusResponse["receipts"];
 }
 
 export interface GetCallsStatusResponse {
   version: string;
   id: string;
   chainId: Hex;
-  status: 100 | 200 | 400 | 500; // pending, confirmed, offchain failure, reverted
+  status: 100 | 200 | 400 | 500 | 600;
   atomic: boolean;
   receipts?: Array<{
     logs: Array<{
@@ -227,20 +240,16 @@ export interface GetCallsStatusResponse {
       data: Hex;
       topics: Hex[];
     }>;
-    status: "success" | "reverted";
+    status: Hex; // 0x1 success, 0x0 failure
     blockHash: Hex;
     blockNumber: Hex;
     gasUsed: Hex;
     transactionHash: Hex;
   }>;
+  capabilities?: Record<string, any>;
 }
 
 export interface SendCallsResponse {
   id: string;
-  capabilities?: {
-    caip345?: {
-      caip2: string;
-      transactionHashes: Hex[];
-    };
-  };
+  capabilities?: Record<string, any>;
 }
