@@ -28,6 +28,7 @@ export type {
   AppMetadata,
   Call,
   CallBatchMetadata,
+  Capability,
   Chain,
   ConnectResponse,
   GeminiProviderConfig,
