@@ -30,6 +30,7 @@ import {
   type GeminiSdkSendTransaction,
   type GeminiSdkSignMessage,
   type GeminiSdkSignTypedData,
+  GeminiSdkSwitchWalletVersionMessage,
   type GetCallsStatusResponse,
   type SendCallsParams,
   type SendCallsResponse,
@@ -38,6 +39,7 @@ import {
   type SignTypedDataResponse,
   type SwitchChainResponse,
   type WalletCapabilities,
+  WalletVersion,
 } from "../types";
 import { hexStringFromNumber } from "../utils";
 
@@ -307,6 +309,16 @@ export class GeminiWallet {
       chainId: this.chain.id,
       data: {},
       event: GeminiSdkEvent.SDK_OPEN_SETTINGS,
+      origin: window.location.origin,
+    });
+  }
+
+  async switchWalletVersion(version: WalletVersion): Promise<void> {
+    await this.ensureInitialized();
+    await this.sendMessageToPopup<GeminiSdkSwitchWalletVersionMessage, GeminiSdkMessageResponse>({
+      chainId: this.chain.id,
+      data: { version },
+      event: GeminiSdkEvent.SDK_SWITCH_WALLET_VERSION,
       origin: window.location.origin,
     });
   }

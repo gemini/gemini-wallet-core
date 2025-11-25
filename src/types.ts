@@ -16,6 +16,7 @@ export enum GeminiSdkEvent {
   SDK_SIGN_DATA = "SDK_SIGN_DATA",
   SDK_SIGN_TYPED_DATA = "SDK_SIGN_TYPED_DATA",
   SDK_SWITCH_CHAIN = "SDK_SWITCH_CHAIN",
+  SDK_SWITCH_WALLET_VERSION = "SDK_SWITCH_WALLET_VERSION",
   SDK_OPEN_SETTINGS = "SDK_OPEN_SETTINGS",
   SDK_CURRENT_ACCOUNT = "SDK_CURRENT_ACCOUNT",
 
@@ -70,6 +71,12 @@ export const PlatformType = {
   REACT_NATIVE: "REACT_NATIVE",
   WEB: "WEB",
 } as const;
+
+export enum WalletVersion {
+  V1 = "useV1Contract",
+  V2 = "useV2Contract",
+  V3 = "useV3Contract",
+}
 
 // Extract type from const object for type safety
 export type PlatformType = (typeof PlatformType)[keyof typeof PlatformType];
@@ -170,6 +177,10 @@ export interface GeminiSdkSwitchChain extends Omit<GeminiSdkMessage, "data"> {
 
 export interface GeminiSdkAppContextMessage extends Omit<GeminiSdkMessage, "data"> {
   data: AppContext;
+}
+
+export interface GeminiSdkSwitchWalletVersionMessage extends Omit<GeminiSdkMessage, "data"> {
+  data: WalletVersion;
 }
 
 export interface ReverseEnsResponse {
