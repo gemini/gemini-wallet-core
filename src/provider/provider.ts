@@ -18,6 +18,7 @@ import {
   type SendCallsParams,
   type SendCallsResponse,
   type WalletCapabilities,
+  WalletVersion,
 } from "../types";
 import { hexStringFromNumber } from "../utils";
 import { GeminiWallet } from "../wallets";
@@ -231,8 +232,12 @@ export class GeminiWalletProvider extends ProviderEventEmitter implements Provid
     await this.wallet?.openSettings();
   }
 
-  // EIP-5792 Implementation Methods - delegating to wallet
+  // custom wallet function to open settings page
+  async switchWalletVersion(version: WalletVersion) {
+    await this.wallet?.switchWalletVersion(version);
+  }
 
+  // EIP-5792 Implementation Methods - delegating to wallet
   private getCapabilities(params?: readonly unknown[]): WalletCapabilities {
     if (!this.wallet) {
       throw providerErrors.unauthorized();
