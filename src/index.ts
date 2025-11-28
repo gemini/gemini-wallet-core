@@ -28,6 +28,7 @@ export type {
   AppMetadata,
   Call,
   CallBatchMetadata,
+  Capability,
   Chain,
   ConnectResponse,
   GeminiProviderConfig,
@@ -52,7 +53,9 @@ export type {
   SignMessageResponse,
   SignTypedDataResponse,
   SwitchChainResponse,
+  V3UpgradeStatus,
   WalletCapabilities,
+  WalletStatus,
 } from "./types";
 export { GeminiSdkEvent, PlatformType, ProviderEventEmitter } from "./types";
 

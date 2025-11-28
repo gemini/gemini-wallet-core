@@ -178,11 +178,24 @@ export interface ReverseEnsResponse {
 }
 
 // EIP-5792 Types
+
+/**
+ * EIP-5792 Capability definition used in wallet_sendCalls requests
+ */
+export interface Capability {
+  /** If true, the capability is optional and can be safely ignored if not supported */
+  optional?: boolean;
+  /** Additional capability-specific properties */
+  [key: string]: unknown;
+}
+
 export interface Call {
   to: Address;
   value?: Hex;
   data?: Hex;
   chainId?: Hex;
+  /** Per-call capabilities */
+  capabilities?: Record<string, Capability>;
 }
 
 export interface SendCallsParams {
@@ -193,6 +206,24 @@ export interface SendCallsParams {
   capabilities?: Record<string, any>;
 }
 
+/**
+ * V3 upgrade status for wallet migration tracking
+ * - COMPLETE: Migration to V3 completed
+ * - NOT_SEEN: No V3 migration initiated
+ * - IN_PROGRESS: Migration to V3 in progress
+ */
+export type V3UpgradeStatus = "COMPLETE" | "NOT_SEEN" | "IN_PROGRESS";
+
+/**
+ * Wallet status enum for migration tracking
+ */
+export type WalletStatus =
+  | "useV1Contract"
+  | "useV2Contract"
+  | "txsBlocked"
+  | "manualMigrationNeeded"
+  | "isBeingAutoMigrated";
+
 export interface WalletCapabilities {
   [chainId: string]: {
     atomic?: {
@@ -201,6 +232,15 @@ export interface WalletCapabilities {
     paymasterService?: {
       supported: boolean;
     };
+    /** WISE identifier for the wallet (present when wallet has been registered) */
+    wiseIdentifier?: string;
+    /** Wallet status information including migration and upgrade state */
+    walletStatus?: {
+      status: WalletStatus;
+      v3UpgradeStatus?: V3UpgradeStatus;
+    };
+    /** Legacy wallet address for V1/V2 contracts (present when status is useV1Contract or useV2Contract) */
+    legacyAddress?: `0x${string}`;
   };
 }
 
