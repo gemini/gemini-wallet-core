@@ -237,7 +237,7 @@ export class GeminiWalletProvider extends ProviderEventEmitter implements Provid
     await this.wallet?.switchWalletVersion(version);
   }
 
-// EIP-5792 Implementation Methods - delegating to wallet
+  // EIP-5792 Implementation Methods - delegating to wallet
   private async getCapabilities(params?: readonly unknown[]): Promise<WalletCapabilities> {
     if (!this.wallet) {
       throw providerErrors.unauthorized();
