@@ -35,7 +35,9 @@ import {
   type SignMessageResponse,
   type SignTypedDataResponse,
   type SwitchChainResponse,
+  type V3UpgradeStatus,
   type WalletCapabilities,
+  type WalletStatus,
 } from "../types";
 import { calculateV1Address, calculateWalletAddress, hexStringFromNumber } from "../utils";
 
@@ -296,13 +298,8 @@ export class GeminiWallet {
       ...(walletStatusData?.wiseIdentifier && { wiseIdentifier: walletStatusData.wiseIdentifier }),
       ...(walletStatusData?.walletStatus && {
         walletStatus: {
-          status: walletStatusData.walletStatus.status as
-            | "useV1Contract"
-            | "useV2Contract"
-            | "txsBlocked"
-            | "manualMigrationNeeded"
-            | "isBeingAutoMigrated",
-          v3UpgradeStatus: walletStatusData.walletStatus.v3UpgradeStatus as "COMPLETE" | "NOT_SEEN" | "IN_PROGRESS",
+          status: walletStatusData.walletStatus.status as WalletStatus,
+          v3UpgradeStatus: walletStatusData.walletStatus.v3UpgradeStatus as V3UpgradeStatus,
         },
       }),
       ...(walletStatusData?.legacyAddress && { legacyAddress: walletStatusData.legacyAddress }),
