@@ -8,13 +8,14 @@ import {
 } from "viem";
 
 import { Communicator } from "../communicator";
-import { DEFAULT_CHAIN_ID, getDefaultRpcUrl, SUPPORTED_CHAIN_IDS } from "../constants";
+import { DEFAULT_CHAIN_ID, getDefaultRpcUrl, HORIZON_API_URL, SUPPORTED_CHAIN_IDS } from "../constants";
 import {
   GeminiStorage,
   type IStorage,
   STORAGE_CALL_BATCHES_KEY,
   STORAGE_ETH_ACCOUNTS_KEY,
   STORAGE_ETH_ACTIVE_CHAIN_KEY,
+  STORAGE_PASSKEY_CREDENTIAL_KEY,
 } from "../storage";
 import {
   type Call,
@@ -38,10 +39,12 @@ import {
   type SignMessageResponse,
   type SignTypedDataResponse,
   type SwitchChainResponse,
+  type V3UpgradeStatus,
   type WalletCapabilities,
+  type WalletStatus,
   WalletVersion,
 } from "../types";
-import { hexStringFromNumber } from "../utils";
+import { calculateV1Address, calculateWalletAddress, hexStringFromNumber } from "../utils";
 
 export function isChainSupportedByGeminiSw(chainId: number): boolean {
   return SUPPORTED_CHAIN_IDS.includes(chainId as (typeof SUPPORTED_CHAIN_IDS)[number]);
@@ -326,14 +329,89 @@ export class GeminiWallet {
   // EIP-5792 Wallet Call API Methods
 
   /**
+   * Fetches wallet status from the walletStatusCheck API
+   * Returns undefined if no passkey is available or if the API call fails
+   */
+  private async fetchWalletStatus(): Promise<
+    | {
+        wiseIdentifier?: string;
+        walletStatus?: { status: string; v3UpgradeStatus?: string };
+        legacyAddress?: `0x${string}`;
+      }
+    | undefined
+  > {
+    try {
+      // Get passkey credential from storage
+      const credentialString = await this.storage.getItem(STORAGE_PASSKEY_CREDENTIAL_KEY);
+      if (!credentialString) {
+        return undefined;
+      }
+
+      const credential = JSON.parse(credentialString);
+      if (!credential?.id || !credential?.publicKey) {
+        return undefined;
+      }
+
+      // Call the wallet status check API
+      const response = await fetch(`${HORIZON_API_URL}/api/walletStatusCheck`, {
+        body: JSON.stringify({
+          credentialId: credential.id,
+          publicKey: credential.publicKey,
+          type: credential.type,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        console.warn("Failed to fetch wallet status:", response.status);
+        return undefined;
+      }
+
+      const data = await response.json();
+
+      // Calculate legacy address if status is useV1Contract or useV2Contract
+      let legacyAddress: `0x${string}` | undefined;
+      if (data.status === "useV1Contract" || data.status === "useV2Contract") {
+        try {
+          const addressParams = {
+            credentialId: credential.id,
+            publicKey: credential.publicKey as `0x${string}`,
+          };
+          legacyAddress =
+            data.status === "useV1Contract" ? calculateV1Address(addressParams) : calculateWalletAddress(addressParams);
+        } catch (addressError) {
+          console.warn("Failed to calculate legacy address:", addressError);
+        }
+      }
+
+      return {
+        legacyAddress,
+        walletStatus: {
+          status: data.status,
+          v3UpgradeStatus: data.v3UpgradeStatus,
+        },
+        wiseIdentifier: data.wiseIdentifier,
+      };
+    } catch (error) {
+      console.warn("Error fetching wallet status:", error);
+      return undefined;
+    }
+  }
+
+  /**
    * Get wallet capabilities per EIP-5792
-   * @param address - The wallet address to check capabilities for (must be connected)
    * @param requestedChainIds - Optional array of chain IDs in hex format (e.g., ["0x1", "0x89"])
    * @returns WalletCapabilities object keyed by chain ID
    * @throws Error with code -32602 for invalid chain ID format
    */
-  getCapabilities(address: Address, requestedChainIds?: string[]): WalletCapabilities {
+  async getCapabilities(requestedChainIds?: string[]): Promise<WalletCapabilities> {
     const capabilities: WalletCapabilities = {};
+
+    // Fetch wallet status from the API
+    const walletStatusData = await this.fetchWalletStatus();
 
     // Validate and parse requested chain IDs if provided
     let chainIdsToInclude: number[];
@@ -365,17 +443,6 @@ export class GeminiWallet {
       chainIdsToInclude = [...SUPPORTED_CHAIN_IDS];
     }
 
-    // Per EIP-5792: Capabilities supported on ALL chains should be under "0x0"
-    // and should NOT be repeated in individual chain objects
-    capabilities["0x0"] = {
-      atomic: {
-        status: "supported", // Smart accounts support atomic batch execution on all chains
-      },
-      paymasterService: {
-        supported: true, // Paymaster service is available on all supported chains
-      },
-    };
-
     // Add per-chain capabilities for requested/supported chains
     // Note: Since our capabilities are universal, we only need "0x0"
     // But we still include empty objects for requested chains to indicate support
@@ -385,6 +452,24 @@ export class GeminiWallet {
       // Don't repeat universal capabilities here per spec
       capabilities[chainIdHex] = {};
     }
+
+    // Add wallet-wide capabilities at "0x0" key per EIP-5792
+    capabilities["0x0"] = {
+      atomic: {
+        status: "supported",
+      },
+      paymasterService: {
+        supported: true,
+      },
+      ...(walletStatusData?.wiseIdentifier && { wiseIdentifier: walletStatusData.wiseIdentifier }),
+      ...(walletStatusData?.walletStatus && {
+        walletStatus: {
+          status: walletStatusData.walletStatus.status as WalletStatus,
+          v3UpgradeStatus: walletStatusData.walletStatus.v3UpgradeStatus as V3UpgradeStatus,
+        },
+      }),
+      ...(walletStatusData?.legacyAddress && { legacyAddress: walletStatusData.legacyAddress }),
+    };
 
     return capabilities;
   }

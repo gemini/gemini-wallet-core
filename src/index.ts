@@ -53,7 +53,9 @@ export type {
   SignMessageResponse,
   SignTypedDataResponse,
   SwitchChainResponse,
+  V3UpgradeStatus,
   WalletCapabilities,
+  WalletStatus,
 } from "./types";
 export { GeminiSdkEvent, PlatformType, ProviderEventEmitter, WalletVersion } from "./types";
 

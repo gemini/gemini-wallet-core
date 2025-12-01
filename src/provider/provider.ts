@@ -176,7 +176,7 @@ export class GeminiWalletProvider extends ProviderEventEmitter implements Provid
         // EIP-5792 Wallet Call API
         case "wallet_getCapabilities": {
           const capabilityParams = Array.isArray(args.params) ? args.params : undefined;
-          response = this.getCapabilities(capabilityParams);
+          response = await this.getCapabilities(capabilityParams);
           break;
         }
         case "wallet_sendCalls": {
@@ -238,7 +238,7 @@ export class GeminiWalletProvider extends ProviderEventEmitter implements Provid
   }
 
   // EIP-5792 Implementation Methods - delegating to wallet
-  private getCapabilities(params?: readonly unknown[]): WalletCapabilities {
+  private async getCapabilities(params?: readonly unknown[]): Promise<WalletCapabilities> {
     if (!this.wallet) {
       throw providerErrors.unauthorized();
     }
@@ -281,7 +281,7 @@ export class GeminiWalletProvider extends ProviderEventEmitter implements Provid
     }
 
     try {
-      return this.wallet.getCapabilities(address, requestedChainIds);
+      return await this.wallet.getCapabilities(requestedChainIds);
     } catch (error) {
       // Re-throw provider errors as-is
       if (error && typeof error === "object" && "code" in error) {
