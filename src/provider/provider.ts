@@ -18,6 +18,7 @@ import {
   type SendCallsParams,
   type SendCallsResponse,
   type WalletCapabilities,
+  WalletVersion,
 } from "../types";
 import { hexStringFromNumber } from "../utils";
 import { GeminiWallet } from "../wallets";
@@ -231,14 +232,64 @@ export class GeminiWalletProvider extends ProviderEventEmitter implements Provid
     await this.wallet?.openSettings();
   }
 
-  // EIP-5792 Implementation Methods - delegating to wallet
+  // custom wallet function to open settings page
+  async switchWalletVersion(version: WalletVersion) {
+    await this.wallet?.switchWalletVersion(version);
+  }
 
+// EIP-5792 Implementation Methods - delegating to wallet
   private async getCapabilities(params?: readonly unknown[]): Promise<WalletCapabilities> {
     if (!this.wallet) {
       throw providerErrors.unauthorized();
     }
-    const requestedChainIds = params?.[0] as string[] | undefined;
-    return await this.wallet.getCapabilities(requestedChainIds);
+
+    // Per EIP-5792: params are [address, [chainIds]]
+    // params[0] = address (required) - must be a connected address
+    // params[1] = array of chain IDs (optional)
+
+    // Extract address from params
+    const address = params?.[0] as Address | undefined;
+    if (!address) {
+      throw rpcErrors.invalidParams("Missing required parameter: address");
+    }
+
+    // Validate address format
+    if (typeof address !== "string" || !address.startsWith("0x") || address.length !== 42) {
+      throw rpcErrors.invalidParams(`Invalid address format: ${address}`);
+    }
+
+    // Per EIP-5792: Should return 4100 Unauthorized if the address is not connected
+    const isConnected = this.wallet.accounts.some(acc => acc.toLowerCase() === address.toLowerCase());
+    if (!isConnected) {
+      throw providerErrors.unauthorized(`Address ${address} is not connected. Please connect the wallet first.`);
+    }
+
+    // Extract optional chain IDs
+    const requestedChainIds = params?.[1] as string[] | undefined;
+
+    // Validate chain IDs format if provided
+    if (requestedChainIds !== undefined) {
+      if (!Array.isArray(requestedChainIds)) {
+        throw rpcErrors.invalidParams("Chain IDs must be provided as an array");
+      }
+
+      for (const chainId of requestedChainIds) {
+        if (typeof chainId !== "string") {
+          throw rpcErrors.invalidParams(`Chain ID must be a string, got: ${typeof chainId}`);
+        }
+      }
+    }
+
+    try {
+      return await this.wallet.getCapabilities(requestedChainIds);
+    } catch (error) {
+      // Re-throw provider errors as-is
+      if (error && typeof error === "object" && "code" in error) {
+        throw error;
+      }
+      // Wrap validation errors as invalid params per EIP-5792
+      throw rpcErrors.invalidParams(error instanceof Error ? error.message : String(error));
+    }
   }
 
   private async sendCalls(params: SendCallsParams): Promise<SendCallsResponse> {
@@ -248,6 +299,10 @@ export class GeminiWalletProvider extends ProviderEventEmitter implements Provid
     try {
       return await this.wallet.sendCalls(params);
     } catch (error) {
+      if (error && typeof error === "object" && "code" in (error as Record<string, unknown>)) {
+        const err = error as { code: number; message?: string };
+        throw providerErrors.custom({ code: err.code, message: err.message ?? "wallet_sendCalls failed" });
+      }
       throw rpcErrors.transactionRejected(error instanceof Error ? error.message : String(error));
     }
   }
@@ -259,6 +314,10 @@ export class GeminiWalletProvider extends ProviderEventEmitter implements Provid
     try {
       return await this.wallet.getCallsStatus(batchId);
     } catch (error) {
+      if (error && typeof error === "object" && "code" in (error as Record<string, unknown>)) {
+        const err = error as { code: number; message?: string };
+        throw providerErrors.custom({ code: err.code, message: err.message ?? "wallet_getCallsStatus failed" });
+      }
       throw rpcErrors.invalidParams(error instanceof Error ? error.message : String(error));
     }
   }
@@ -270,6 +329,10 @@ export class GeminiWalletProvider extends ProviderEventEmitter implements Provid
     try {
       await this.wallet.showCallsStatus(batchId);
     } catch (error) {
+      if (error && typeof error === "object" && "code" in (error as Record<string, unknown>)) {
+        const err = error as { code: number; message?: string };
+        throw providerErrors.custom({ code: err.code, message: err.message ?? "wallet_showCallsStatus failed" });
+      }
       throw rpcErrors.invalidParams(error instanceof Error ? error.message : String(error));
     }
   }

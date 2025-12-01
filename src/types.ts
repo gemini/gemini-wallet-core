@@ -16,6 +16,7 @@ export enum GeminiSdkEvent {
   SDK_SIGN_DATA = "SDK_SIGN_DATA",
   SDK_SIGN_TYPED_DATA = "SDK_SIGN_TYPED_DATA",
   SDK_SWITCH_CHAIN = "SDK_SWITCH_CHAIN",
+  SDK_SWITCH_WALLET_VERSION = "SDK_SWITCH_WALLET_VERSION",
   SDK_OPEN_SETTINGS = "SDK_OPEN_SETTINGS",
   SDK_CURRENT_ACCOUNT = "SDK_CURRENT_ACCOUNT",
 
@@ -70,6 +71,12 @@ export const PlatformType = {
   REACT_NATIVE: "REACT_NATIVE",
   WEB: "WEB",
 } as const;
+
+export enum WalletVersion {
+  V1 = "useV1Contract",
+  V2 = "useV2Contract",
+  V3 = "useV3Contract",
+}
 
 // Extract type from const object for type safety
 export type PlatformType = (typeof PlatformType)[keyof typeof PlatformType];
@@ -172,6 +179,10 @@ export interface GeminiSdkAppContextMessage extends Omit<GeminiSdkMessage, "data
   data: AppContext;
 }
 
+export interface GeminiSdkSwitchWalletVersionMessage extends Omit<GeminiSdkMessage, "data"> {
+  data: WalletVersion;
+}
+
 export interface ReverseEnsResponse {
   address: Address;
   name: string | null;
@@ -200,10 +211,12 @@ export interface Call {
 
 export interface SendCallsParams {
   version: string;
+  id?: string;
+  from?: Address;
   chainId: Hex;
-  from: Address;
+  atomicRequired: boolean;
   calls: Call[];
-  capabilities?: Record<string, any>;
+  capabilities?: Record<string, Capability>;
 }
 
 /**
@@ -227,7 +240,7 @@ export type WalletStatus =
 export interface WalletCapabilities {
   [chainId: string]: {
     atomic?: {
-      status: "supported" | "unsupported";
+      status: "supported" | "ready" | "unsupported";
     };
     paymasterService?: {
       supported: boolean;
@@ -241,25 +254,32 @@ export interface WalletCapabilities {
     };
     /** Legacy wallet address for V1/V2 contracts (present when status is useV1Contract or useV2Contract) */
     legacyAddress?: `0x${string}`;
+    /** Allow for additional capabilities */
+    [capability: string]: unknown;
   };
 }
 
 export interface CallBatchMetadata {
   id: string;
   chainId: string;
-  from: Address;
+  rpcUrl?: string;
+  from?: Address;
   calls: Call[];
   transactionHash?: Hex;
   status: "pending" | "confirmed" | "failed" | "reverted";
   timestamp: number;
-  capabilities?: Record<string, any>;
+  version: string;
+  atomicRequired: boolean;
+  atomicExecuted: boolean;
+  capabilities?: Record<string, Capability>;
+  receipts?: GetCallsStatusResponse["receipts"];
 }
 
 export interface GetCallsStatusResponse {
   version: string;
   id: string;
   chainId: Hex;
-  status: 100 | 200 | 400 | 500; // pending, confirmed, offchain failure, reverted
+  status: 100 | 200 | 400 | 500 | 600;
   atomic: boolean;
   receipts?: Array<{
     logs: Array<{
@@ -267,20 +287,16 @@ export interface GetCallsStatusResponse {
       data: Hex;
       topics: Hex[];
     }>;
-    status: "success" | "reverted";
+    status: Hex; // 0x1 success, 0x0 failure
     blockHash: Hex;
     blockNumber: Hex;
     gasUsed: Hex;
     transactionHash: Hex;
   }>;
+  capabilities?: Record<string, any>;
 }
 
 export interface SendCallsResponse {
   id: string;
-  capabilities?: {
-    caip345?: {
-      caip2: string;
-      transactionHashes: Hex[];
-    };
-  };
+  capabilities?: Record<string, any>;
 }
