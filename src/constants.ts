@@ -16,8 +16,16 @@ import packageJson from "../package.json";
 const DEFAULT_BACKEND_URL = "https://keys.gemini.com";
 const DEFAULT_HORIZON_API_URL = "https://horizon-api.gemini.com";
 
-export const SDK_BACKEND_URL = process.env?.SDK_BACKEND_URL || DEFAULT_BACKEND_URL;
-export const HORIZON_API_URL = process.env?.HORIZON_API_URL || DEFAULT_HORIZON_API_URL;
+// Safe access to process.env for browser environments where process is undefined
+const getEnvVar = (key: string): string | undefined => {
+  if (typeof process !== "undefined" && process.env) {
+    return process.env[key];
+  }
+  return undefined;
+};
+
+export const SDK_BACKEND_URL = getEnvVar("SDK_BACKEND_URL") || DEFAULT_BACKEND_URL;
+export const HORIZON_API_URL = getEnvVar("HORIZON_API_URL") || DEFAULT_HORIZON_API_URL;
 export const ENS_API_URL = `${HORIZON_API_URL}/api/ens`;
 export const SDK_VERSION = packageJson.version;
 export const DEFAULT_CHAIN_ID = 42161; // Arbitrum One
