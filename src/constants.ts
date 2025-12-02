@@ -18,7 +18,7 @@ const DEFAULT_HORIZON_API_URL = "https://horizon-api.gemini.com";
 
 // Safe access to process.env for browser environments where process is undefined
 const getEnvVar = (key: string): string | undefined => {
-  if (typeof process !== "undefined" && process.env) {
+  if (typeof process !== "undefined" && process.env && typeof process.env === "object") {
     return process.env[key];
   }
   return undefined;
