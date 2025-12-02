@@ -11,23 +11,16 @@ import {
   sepolia,
 } from "viem/chains";
 
-import packageJson from "../package.json";
+/* eslint-disable no-undef */
+// @ts-expect-error replaced at build time via tsup
+export const SDK_BACKEND_URL = __SDK_BACKEND_URL__ as string;
+// @ts-expect-error replaced at build time via tsup
+export const HORIZON_API_URL = __HORIZON_API_URL__ as string;
+// @ts-expect-error replaced at build time via tsup
+export const SDK_VERSION = __SDK_VERSION__ as string;
+/* eslint-enable no-undef */
 
-const DEFAULT_BACKEND_URL = "https://keys.gemini.com";
-const DEFAULT_HORIZON_API_URL = "https://horizon-api.gemini.com";
-
-// Safe access to process.env for browser environments where process is undefined
-const getEnvVar = (key: string): string | undefined => {
-  if (typeof process !== "undefined" && process.env && typeof process.env === "object") {
-    return process.env[key];
-  }
-  return undefined;
-};
-
-export const SDK_BACKEND_URL = getEnvVar("SDK_BACKEND_URL") || DEFAULT_BACKEND_URL;
-export const HORIZON_API_URL = getEnvVar("HORIZON_API_URL") || DEFAULT_HORIZON_API_URL;
 export const ENS_API_URL = `${HORIZON_API_URL}/api/ens`;
-export const SDK_VERSION = packageJson.version;
 export const DEFAULT_CHAIN_ID = 42161; // Arbitrum One
 
 // Mainnet chain IDs
