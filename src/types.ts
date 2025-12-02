@@ -135,8 +135,17 @@ export interface GeminiSdkMessageResponse {
   requestId?: string;
 }
 
+export interface PasskeyIdentifier {
+  id: string;
+  publicKey: `0x${string}`;
+  type?: string;
+}
+
 export interface ConnectResponse extends Omit<GeminiSdkMessageResponse, "data"> {
-  data: { address: Address };
+  data: {
+    address: Address;
+    identifier?: PasskeyIdentifier;
+  };
 }
 
 export interface SendTransactionResponse extends Omit<GeminiSdkMessageResponse, "data"> {
