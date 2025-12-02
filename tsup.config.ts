@@ -12,8 +12,9 @@ export default defineConfig({
   entry: ["src/index.ts"],
   esbuildPlugins: [
     replace({
-      $SDK_VERSION: pkgJson.version,
-      "process.env?.SDK_BACKEND_URL": process.env.SDK_BACKEND_URL ? `"${process.env.SDK_BACKEND_URL}"` : "undefined",
+      __HORIZON_API_URL__: `"${process.env.HORIZON_API_URL || "https://horizon-api.gemini.com"}"`,
+      __SDK_BACKEND_URL__: `"${process.env.SDK_BACKEND_URL || "https://keys.gemini.com"}"`,
+      __SDK_VERSION__: `"${pkgJson?.version || ""}"`,
     }),
   ],
   external: ["@metamask/rpc-errors", "eventemitter3", "viem"],
