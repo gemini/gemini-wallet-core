@@ -226,6 +226,11 @@ export class GeminiWallet {
     this.accounts = response.data.address ? [response.data.address] : [];
     await this.storage.storeObject(STORAGE_ETH_ACCOUNTS_KEY, this.accounts);
 
+    // Store the passkey identifier if provided (needed for wallet status checks)
+    if (response.data.identifier) {
+      await this.storage.setItem(STORAGE_PASSKEY_CREDENTIAL_KEY, JSON.stringify(response.data.identifier));
+    }
+
     return this.accounts;
   }
 
@@ -233,6 +238,8 @@ export class GeminiWallet {
     await this.ensureInitialized();
     this.accounts = [];
     await this.storage.storeObject(STORAGE_ETH_ACCOUNTS_KEY, this.accounts);
+    // Clear the passkey credential on disconnect
+    await this.storage.removeItem(STORAGE_PASSKEY_CREDENTIAL_KEY);
   }
 
   async switchChain({ id }: SwitchChainParameters): Promise<string | null> {

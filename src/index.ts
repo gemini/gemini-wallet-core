@@ -41,6 +41,7 @@ export type {
   GeminiSdkSignTypedData,
   GeminiSdkSwitchChain,
   GetCallsStatusResponse,
+  PasskeyIdentifier,
   ProviderEventCallback,
   ProviderEventMap,
   ProviderInterface,
