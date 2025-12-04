@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import {
   calculateV1Address,
+  calculateV2Address,
   calculateWalletAddress,
   generateAuthenticatorIdHash,
   validateWebAuthnKey,
@@ -120,5 +121,58 @@ describe("calculateWalletAddress", () => {
     const expectedAddress = "0x3B3CA0de38c7aa794775E183f4A0D428251d6781";
 
     expect(calculatedAddress.toLowerCase()).toBe(expectedAddress.toLowerCase());
+  });
+});
+
+describe("calculateV2Address", () => {
+  test("should calculate exact V2 wallet address", () => {
+    const publicKey =
+      "0x900fb1e17b7766916a8dad6f8a26b3dbc4fe4f9b1ea5f2d20b7cb31e44c5ff54e63df1865b444a4e7b74a33ef8e3a269f77a6ba5afd072fc641ad5c7f9d626c7" as const;
+    const credentialId = "XJ980eHLIRtTop-iX4-wAtSUQ-GxPv_6JIprPE2nN-RBgfJKZPWEWzC-amiRxzfjpks_7q7A8Q";
+
+    const calculatedAddress = calculateV2Address({
+      credentialId,
+      publicKey,
+    });
+
+    const expectedAddress = "0xb5E764Ddf8dD5A3613779132E95f389328149b0C";
+
+    expect(calculatedAddress.toLowerCase()).toBe(expectedAddress.toLowerCase());
+  });
+
+  test("should calculate V2 address for second test wallet", () => {
+    const publicKey =
+      "0x69933403b13f813f8417b5ef0716f39151dd58702aead4f7e991b5fb80bc868f54baf92948c91613d52a891534927c10a4b6b19bbffef9815459ebd77ea690a6" as const;
+    const credentialId = "2X4LvYKqkmbs89vIzAMcOFtw58y4uBIjWRMZUlJ43zc";
+
+    const calculatedAddress = calculateV2Address({
+      credentialId,
+      publicKey,
+    });
+
+    const expectedAddress = "0xdd294FD857f00E533aa9bCBfDd49c76c842238F0";
+
+    expect(calculatedAddress.toLowerCase()).toBe(expectedAddress.toLowerCase());
+  });
+
+  test("should throw error for invalid public key", () => {
+    expect(() => {
+      calculateV2Address({
+        credentialId: "test",
+        publicKey: "0xinvalid",
+      });
+    }).toThrow("Invalid public key: must be 64-byte hex string (0x + 128 chars)");
+  });
+
+  test("V2 and V3 addresses should be the same (V3 placeholder)", () => {
+    const publicKey =
+      "0x900fb1e17b7766916a8dad6f8a26b3dbc4fe4f9b1ea5f2d20b7cb31e44c5ff54e63df1865b444a4e7b74a33ef8e3a269f77a6ba5afd072fc641ad5c7f9d626c7" as const;
+    const credentialId = "XJ980eHLIRtTop-iX4-wAtSUQ-GxPv_6JIprPE2nN-RBgfJKZPWEWzC-amiRxzfjpks_7q7A8Q";
+
+    const v2Address = calculateV2Address({ credentialId, publicKey });
+    const v3Address = calculateWalletAddress({ credentialId, publicKey });
+
+    // V3 is currently a placeholder using the same addresses as V2
+    expect(v2Address).toBe(v3Address);
   });
 });

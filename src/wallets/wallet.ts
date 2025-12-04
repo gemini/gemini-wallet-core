@@ -44,7 +44,7 @@ import {
   type WalletStatus,
   WalletVersion,
 } from "../types";
-import { calculateV1Address, calculateWalletAddress, hexStringFromNumber } from "../utils";
+import { calculateV1Address, calculateV2Address, hexStringFromNumber } from "../utils";
 
 export function isChainSupportedByGeminiSw(chainId: number): boolean {
   return SUPPORTED_CHAIN_IDS.includes(chainId as (typeof SUPPORTED_CHAIN_IDS)[number]);
@@ -381,14 +381,14 @@ export class GeminiWallet {
 
       // Calculate legacy address if status is useV1Contract or useV2Contract
       let legacyAddress: `0x${string}` | undefined;
-      if (data.status === "useV1Contract" || data.status === "useV2Contract") {
+      if (data.status === WalletVersion.V1 || data.status === WalletVersion.V2) {
         try {
           const addressParams = {
             credentialId: credential.id,
             publicKey: credential.publicKey as `0x${string}`,
           };
           legacyAddress =
-            data.status === "useV1Contract" ? calculateV1Address(addressParams) : calculateWalletAddress(addressParams);
+            data.status === WalletVersion.V1 ? calculateV1Address(addressParams) : calculateV2Address(addressParams);
         } catch (addressError) {
           console.warn("Failed to calculate legacy address:", addressError);
         }

@@ -2,6 +2,7 @@ export { SDK_BACKEND_URL, SDK_VERSION } from "../constants";
 export { base64ToHex, bufferToBase64URLString, decodeBase64, encodeBase64, utf8StringToBuffer } from "./base64";
 export {
   calculateV1Address,
+  calculateV2Address,
   calculateWalletAddress,
   type CalculateWalletAddressParams,
   generateAuthenticatorIdHash,

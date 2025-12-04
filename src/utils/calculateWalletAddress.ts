@@ -44,12 +44,20 @@ const V1_CONTRACT_ADDRESSES = {
   WEBAUTHN_VALIDATOR: "0xbA45a2BFb8De3D24cA9D7F1B551E14dFF5d690Fd" as const,
 };
 
+// V3 contract addresses (placeholder - same as V2 until V3 contracts are deployed)
+const V3_CONTRACT_ADDRESSES = {
+  ...SHARED_CONTRACT_ADDRESSES,
+  ACCOUNT_IMPLEMENTATION: "0x00000000029d9c8b864DD51d6bb0d99FB72D650b" as const,
+  FACTORY: "0x000000000452377e1Bd9e72E939855ECb9363Cab" as const,
+  WEBAUTHN_VALIDATOR: "0x7ab16Ff354AcB328452F1D445b3Ddee9a91e9e69" as const,
+};
+
 /**
  * Internal helper to process and validate wallet address calculation parameters
  */
 function processWalletAddressParams(
   params: CalculateWalletAddressParams,
-  contractAddresses: typeof V1_CONTRACT_ADDRESSES | typeof V2_CONTRACT_ADDRESSES,
+  contractAddresses: typeof V1_CONTRACT_ADDRESSES | typeof V2_CONTRACT_ADDRESSES | typeof V3_CONTRACT_ADDRESSES,
 ): Address {
   const { publicKey, credentialId, index = 0n } = params;
 
@@ -86,10 +94,19 @@ function processWalletAddressParams(
 }
 
 /**
+ * Calculate smart wallet address from public key and credential ID (V3 - current default)
+ * This handles all validation and setup internally
+ * Note: V3 currently uses same addresses as V2 (placeholder until V3 contracts are deployed)
+ */
+export function calculateWalletAddress(params: CalculateWalletAddressParams): Address {
+  return processWalletAddressParams(params, V3_CONTRACT_ADDRESSES);
+}
+
+/**
  * Calculate smart wallet address from public key and credential ID (V2)
  * This handles all validation and setup internally
  */
-export function calculateWalletAddress(params: CalculateWalletAddressParams): Address {
+export function calculateV2Address(params: CalculateWalletAddressParams): Address {
   return processWalletAddressParams(params, V2_CONTRACT_ADDRESSES);
 }
 
@@ -149,7 +166,7 @@ function calculateAddressInternal(params: {
   webAuthnData: WebAuthnValidatorData;
   authenticatorIdHash: Hex;
   index: bigint;
-  contractAddresses: typeof V1_CONTRACT_ADDRESSES | typeof V2_CONTRACT_ADDRESSES;
+  contractAddresses: typeof V1_CONTRACT_ADDRESSES | typeof V2_CONTRACT_ADDRESSES | typeof V3_CONTRACT_ADDRESSES;
 }): Address {
   const { webAuthnData, authenticatorIdHash, index, contractAddresses } = params;
 
