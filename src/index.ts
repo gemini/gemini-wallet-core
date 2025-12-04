@@ -66,6 +66,7 @@ export {
   base64ToHex,
   bufferToBase64URLString,
   calculateV1Address,
+  calculateV2Address,
   calculateWalletAddress,
   closePopup,
   decodeBase64,
