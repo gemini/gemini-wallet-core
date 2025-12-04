@@ -44,7 +44,7 @@ import {
   type WalletStatus,
   WalletVersion,
 } from "../types";
-import { calculateV1Address, calculateV2Address, hexStringFromNumber } from "../utils";
+import { calculateV1Address, calculateV2Address, calculateWalletAddress, hexStringFromNumber } from "../utils";
 
 export function isChainSupportedByGeminiSw(chainId: number): boolean {
   return SUPPORTED_CHAIN_IDS.includes(chainId as (typeof SUPPORTED_CHAIN_IDS)[number]);
@@ -344,6 +344,7 @@ export class GeminiWallet {
         wiseIdentifier?: string;
         walletStatus?: { status: string; v3UpgradeStatus?: string };
         legacyAddress?: `0x${string}`;
+        v3Address?: `0x${string}`;
       }
     | undefined
   > {
@@ -379,8 +380,9 @@ export class GeminiWallet {
 
       const data = await response.json();
 
-      // Calculate legacy address if status is useV1Contract or useV2Contract
+      // Calculate legacy address and v3 address if status is useV1Contract or useV2Contract
       let legacyAddress: `0x${string}` | undefined;
+      let v3Address: `0x${string}` | undefined;
       if (data.status === WalletVersion.V1 || data.status === WalletVersion.V2) {
         try {
           const addressParams = {
@@ -389,13 +391,16 @@ export class GeminiWallet {
           };
           legacyAddress =
             data.status === WalletVersion.V1 ? calculateV1Address(addressParams) : calculateV2Address(addressParams);
+          // Calculate the V3 address for migration purposes
+          v3Address = calculateWalletAddress(addressParams);
         } catch (addressError) {
-          console.warn("Failed to calculate legacy address:", addressError);
+          console.warn("Failed to calculate wallet addresses:", addressError);
         }
       }
 
       return {
         legacyAddress,
+        v3Address,
         walletStatus: {
           status: data.status,
           v3UpgradeStatus: data.v3UpgradeStatus,
@@ -476,6 +481,7 @@ export class GeminiWallet {
         },
       }),
       ...(walletStatusData?.legacyAddress && { legacyAddress: walletStatusData.legacyAddress }),
+      ...(walletStatusData?.v3Address && { v3Address: walletStatusData.v3Address }),
     };
 
     return capabilities;
