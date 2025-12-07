@@ -44,7 +44,7 @@ import {
   type WalletStatus,
   WalletVersion,
 } from "../types";
-import { calculateV1Address, calculateV2Address, calculateWalletAddress, hexStringFromNumber } from "../utils";
+import { calculateV1Address, calculateV2Address, calculateV3Address, hexStringFromNumber } from "../utils";
 
 export function isChainSupportedByGeminiSw(chainId: number): boolean {
   return SUPPORTED_CHAIN_IDS.includes(chainId as (typeof SUPPORTED_CHAIN_IDS)[number]);
@@ -391,8 +391,8 @@ export class GeminiWallet {
           };
           legacyAddress =
             data.status === WalletVersion.V1 ? calculateV1Address(addressParams) : calculateV2Address(addressParams);
-          // Calculate the V3 address for migration purposes
-          v3Address = calculateWalletAddress(addressParams);
+          // Calculate the V3 address for migration purposes (V3 only needs publicKey, not credentialId)
+          v3Address = calculateV3Address({ publicKey: credential.publicKey as `0x${string}` });
         } catch (addressError) {
           console.warn("Failed to calculate wallet addresses:", addressError);
         }

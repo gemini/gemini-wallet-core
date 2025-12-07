@@ -14,11 +14,16 @@ export interface WebAuthnValidatorData {
   pubKeyY: bigint;
 }
 
-// Parameters for calculating wallet address
+// Parameters for calculating wallet address (V1/V2)
 export interface CalculateWalletAddressParams {
   publicKey: Hex; // Combined 64-byte hex string (32 bytes X + 32 bytes Y)
   credentialId: string; // Base64URL encoded credential ID
   index?: bigint; // Optional, defaults to 0
+}
+
+// Parameters for calculating V3 wallet address (simplified - no credentialId)
+export interface CalculateV3WalletAddressParams {
+  publicKey: Hex; // Combined 64-byte hex string (32 bytes X + 32 bytes Y)
 }
 
 // Shared contract addresses across versions
@@ -44,12 +49,15 @@ const V1_CONTRACT_ADDRESSES = {
   WEBAUTHN_VALIDATOR: "0xbA45a2BFb8De3D24cA9D7F1B551E14dFF5d690Fd" as const,
 };
 
-// V3 contract addresses (placeholder - same as V2 until V3 contracts are deployed)
+// V3 contract addresses (HorizonSmartWalletV2Factory - uses WISE module + WebAuthn)
 const V3_CONTRACT_ADDRESSES = {
-  ...SHARED_CONTRACT_ADDRESSES,
   ACCOUNT_IMPLEMENTATION: "0x00000000029d9c8b864DD51d6bb0d99FB72D650b" as const,
-  FACTORY: "0x000000000452377e1Bd9e72E939855ECb9363Cab" as const,
+  ATTESTER: "0x000474392a9cd86a4687354f1Ce2964B52e97484" as const,
+  BOOTSTRAPPER: "0x000000F5b753Fdd20C5CA2D7c1210b3Ab1EA5903" as const,
+  FACTORY: "0xC75a88fEb7B6459428C57652a0C4A19B27C15A6C" as const,
+  REGISTRY: "0x000000000069E2a187AEFFb852bF3cCdC95151B2" as const,
   WEBAUTHN_VALIDATOR: "0x7ab16Ff354AcB328452F1D445b3Ddee9a91e9e69" as const,
+  WISE_MODULE: "0x4649bd3E76aC8B2cE8af7D60007571CdD47d4ABe" as const,
 };
 
 /**
@@ -94,12 +102,12 @@ function processWalletAddressParams(
 }
 
 /**
- * Calculate smart wallet address from public key and credential ID (V3 - current default)
+ * Calculate smart wallet address from public key and credential ID (V2 - default for backward compatibility)
  * This handles all validation and setup internally
- * Note: V3 currently uses same addresses as V2 (placeholder until V3 contracts are deployed)
+ * For V3 addresses (simplified, no credentialId), use calculateV3Address instead
  */
 export function calculateWalletAddress(params: CalculateWalletAddressParams): Address {
-  return processWalletAddressParams(params, V3_CONTRACT_ADDRESSES);
+  return processWalletAddressParams(params, V2_CONTRACT_ADDRESSES);
 }
 
 /**
@@ -276,4 +284,175 @@ function predictProxyAddress(implementation: Address, salt: Hex, initData: Hex, 
     from: deployer,
     salt,
   });
+}
+
+/**
+ * Internal V3 address calculation
+ * Uses the new HorizonSmartWalletV2Factory logic with simplified salt and two validators
+ */
+function calculateV3AddressInternal(params: CalculateV3WalletAddressParams): Address {
+  const { publicKey } = params;
+
+  // Validate input
+  if (!publicKey.startsWith("0x") || publicKey.length !== 130) {
+    throw new Error("Invalid public key: must be 64-byte hex string (0x + 128 chars)");
+  }
+
+  // Extract X and Y coordinates
+  const pubKeyX = `0x${publicKey.slice(2, 66)}` as Hex;
+  const pubKeyY = `0x${publicKey.slice(66, 130)}` as Hex;
+
+  // Convert to WebAuthnValidatorData
+  const webAuthnData: WebAuthnValidatorData = {
+    pubKeyX: BigInt(pubKeyX),
+    pubKeyY: BigInt(pubKeyY),
+  };
+
+  // Validate the key is on the secp256r1 curve
+  if (!validateWebAuthnKey(webAuthnData)) {
+    throw new Error("Invalid WebAuthn key: coordinates are not on secp256r1 curve");
+  }
+
+  // Use V3 contract addresses
+  const factoryAddress = V3_CONTRACT_ADDRESSES.FACTORY;
+  const accountImplementation = V3_CONTRACT_ADDRESSES.ACCOUNT_IMPLEMENTATION;
+  const wiseModule = V3_CONTRACT_ADDRESSES.WISE_MODULE;
+  const webAuthnValidator = V3_CONTRACT_ADDRESSES.WEBAUTHN_VALIDATOR;
+  const attester = V3_CONTRACT_ADDRESSES.ATTESTER;
+  const bootstrapper = V3_CONTRACT_ADDRESSES.BOOTSTRAPPER;
+  const registry = V3_CONTRACT_ADDRESSES.REGISTRY;
+
+  // V3 salt: keccak256(abi.encodePacked(pubKeyX, pubKeyY)) - simplified, no credentialId or index
+  const salt = keccak256(encodePacked(["uint256", "uint256"], [webAuthnData.pubKeyX, webAuthnData.pubKeyY]));
+
+  // Prepare WISE module init data: abi.encode(webAuthnData)
+  const wiseModuleInitData = encodeAbiParameters(
+    [
+      {
+        components: [
+          { name: "pubKeyX", type: "uint256" },
+          { name: "pubKeyY", type: "uint256" },
+        ],
+        type: "tuple",
+      },
+    ],
+    [webAuthnData],
+  );
+
+  // Prepare WebAuthn validator init data: abi.encode(webAuthnData, bytes32(0))
+  const webAuthnInitData = encodeAbiParameters(
+    [
+      {
+        components: [
+          { name: "pubKeyX", type: "uint256" },
+          { name: "pubKeyY", type: "uint256" },
+        ],
+        type: "tuple",
+      },
+      { type: "bytes32" },
+    ],
+    [webAuthnData, "0x0000000000000000000000000000000000000000000000000000000000000000"],
+  );
+
+  // Create RegistryConfig struct
+  const registryConfig = {
+    attesters: [attester],
+    registry,
+    threshold: 1n,
+  };
+
+  // Encode the bootstrap call using initNexus with two validators
+  const bootstrapCall = encodeFunctionData({
+    abi: [
+      {
+        inputs: [
+          {
+            components: [
+              { name: "module", type: "address" },
+              { name: "data", type: "bytes" },
+            ],
+            name: "validators",
+            type: "tuple[]",
+          },
+          {
+            components: [
+              { name: "module", type: "address" },
+              { name: "data", type: "bytes" },
+            ],
+            name: "executors",
+            type: "tuple[]",
+          },
+          {
+            components: [
+              { name: "module", type: "address" },
+              { name: "data", type: "bytes" },
+            ],
+            name: "hook",
+            type: "tuple",
+          },
+          {
+            components: [
+              { name: "module", type: "address" },
+              { name: "data", type: "bytes" },
+            ],
+            name: "fallbacks",
+            type: "tuple[]",
+          },
+          {
+            components: [
+              { name: "hookType", type: "uint256" },
+              { name: "module", type: "address" },
+              { name: "data", type: "bytes" },
+            ],
+            name: "preValidationHooks",
+            type: "tuple[]",
+          },
+          {
+            components: [
+              { name: "registry", type: "address" },
+              { name: "attesters", type: "address[]" },
+              { name: "threshold", type: "uint8" },
+            ],
+            name: "registryConfig",
+            type: "tuple",
+          },
+        ],
+        name: "initNexus",
+        type: "function",
+      },
+    ],
+    args: [
+      // validators array: [{ module: WISE_MODULE, data: wiseModuleInitData }, { module: WEB_AUTHN_MODULE, data: webAuthnInitData }]
+      [
+        { data: wiseModuleInitData, module: wiseModule },
+        { data: webAuthnInitData, module: webAuthnValidator },
+      ],
+      // executors: empty array
+      [],
+      // hook: empty (address(0), empty bytes)
+      { data: "0x" as Hex, module: "0x0000000000000000000000000000000000000000" as Address },
+      // fallbacks: empty array
+      [],
+      // preValidationHooks: empty array
+      [],
+      // registryConfig
+      registryConfig,
+    ],
+    functionName: "initNexus",
+  });
+
+  // Format initialization data as expected by ProxyLib
+  const initData = encodeAbiParameters([{ type: "address" }, { type: "bytes" }], [bootstrapper, bootstrapCall]);
+
+  // Calculate CREATE2 address using the same logic as ProxyLib.predictProxyAddress
+  return predictProxyAddress(accountImplementation, salt, initData, factoryAddress);
+}
+
+/**
+ * Calculate V3 smart wallet address from public key
+ * V3 uses simplified salt (just pubKeyX + pubKeyY) and two validators (WISE + WebAuthn)
+ * Unlike V1/V2, V3 does not require credentialId or index - just the public key
+ */
+export function calculateV3Address(params: CalculateV3WalletAddressParams): Address {
+  return calculateV3AddressInternal(params);
 }

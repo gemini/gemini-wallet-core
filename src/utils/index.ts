@@ -3,6 +3,8 @@ export { base64ToHex, bufferToBase64URLString, decodeBase64, encodeBase64, utf8S
 export {
   calculateV1Address,
   calculateV2Address,
+  calculateV3Address,
+  type CalculateV3WalletAddressParams,
   calculateWalletAddress,
   type CalculateWalletAddressParams,
   generateAuthenticatorIdHash,
