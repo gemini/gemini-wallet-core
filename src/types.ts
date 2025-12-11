@@ -254,17 +254,13 @@ export interface WalletCapabilities {
     paymasterService?: {
       supported: boolean;
     };
-    /** WISE identifier for the wallet (present when wallet has been registered) */
-    wiseIdentifier?: string;
-    /** Wallet status information including migration and upgrade state */
-    walletStatus?: {
-      status: WalletStatus;
-      v3UpgradeStatus?: V3UpgradeStatus;
-    };
-    /** Legacy wallet address for V1/V2 contracts (present when status is useV1Contract or useV2Contract) */
-    legacyAddress?: `0x${string}`;
-    /** Allow for additional capabilities */
-    [capability: string]: unknown;
+    credentialId?: string; // credentialId of passkey
+    wiseIdentifier?: string; // WISE ID for the wallet (present when wallet has been registered)
+    v2UpgradeStatus?: WalletStatus; // v2 migration status
+    v3UpgradeStatus?: V3UpgradeStatus; // v3 migration status
+    v3Address?: Address; // wallet address for V3 contract
+    legacyAddress?: Address; // wallet address for V1/V2 contracts
+    [capability: string]: unknown; // future additional capabilities
   };
 }
 
