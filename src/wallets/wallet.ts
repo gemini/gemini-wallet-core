@@ -342,7 +342,7 @@ export class GeminiWallet {
   private async fetchWalletStatus(): Promise<
     | Pick<
         WalletCapabilities[string],
-        "wiseIdentifier" | "v2UpgradeStatus" | "v3UpgradeStatus" | "legacyAddress" | "v3Address"
+        "credentialId" | "wiseIdentifier" | "v2UpgradeStatus" | "v3UpgradeStatus" | "legacyAddress" | "v3Address"
       >
     | undefined
   > {
@@ -397,6 +397,7 @@ export class GeminiWallet {
       }
 
       return {
+        credentialId: credential.id,
         legacyAddress,
         v2UpgradeStatus: data.status as WalletStatus,
         v3Address,
