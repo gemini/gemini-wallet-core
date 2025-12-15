@@ -255,6 +255,7 @@ export interface WalletCapabilities {
       supported: boolean;
     };
     credentialId?: string; // credentialId of passkey
+    hasV2Wallet?: boolean; // indicator if wallet has legacy version
     wiseIdentifier?: string; // WISE ID for the wallet (present when wallet has been registered)
     v2UpgradeStatus?: WalletStatus; // v2 migration status
     v3UpgradeStatus?: V3UpgradeStatus; // v3 migration status
