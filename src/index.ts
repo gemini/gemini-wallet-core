@@ -61,12 +61,13 @@ export type {
 export { GeminiSdkEvent, PlatformType, ProviderEventEmitter, WalletVersion } from "./types";
 
 // Utility exports
-export type { CalculateWalletAddressParams, WebAuthnValidatorData } from "./utils";
+export type { CalculateV3WalletAddressParams, CalculateWalletAddressParams, WebAuthnValidatorData } from "./utils";
 export {
   base64ToHex,
   bufferToBase64URLString,
   calculateV1Address,
   calculateV2Address,
+  calculateV3Address,
   calculateWalletAddress,
   closePopup,
   decodeBase64,

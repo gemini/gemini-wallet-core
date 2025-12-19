@@ -50,14 +50,18 @@ const V1_CONTRACT_ADDRESSES = {
 };
 
 // V3 contract addresses (HorizonSmartWalletV2Factory - uses WISE module + WebAuthn)
+// NOTE: Naming discrepancy - "V2Factory" in contract naming corresponds to SDK "V3"
+// This is because the contract versioning started fresh while SDK versioning is cumulative
+// V3 uses simplified salt (pubKeyX + pubKeyY only, no authenticatorIdHash or index)
+// Uses Entry Point v0.8 temporarily
 const V3_CONTRACT_ADDRESSES = {
-  ACCOUNT_IMPLEMENTATION: "0x00000000029d9c8b864DD51d6bb0d99FB72D650b" as const,
-  ATTESTER: "0x000474392a9cd86a4687354f1Ce2964B52e97484" as const,
-  BOOTSTRAPPER: "0x000000F5b753Fdd20C5CA2D7c1210b3Ab1EA5903" as const,
-  FACTORY: "0xC75a88fEb7B6459428C57652a0C4A19B27C15A6C" as const,
+  ACCOUNT_IMPLEMENTATION: "0xb168498C538fF637Fbe23F7d6F89ce99741E3C8e" as const,
+  ATTESTER: "0xEA843967cd05549d977475889AF2fadaE78966FD" as const,
+  BOOTSTRAPPER: "0x00000000D3254452a909E4eeD47455Af7E27C289" as const,
+  FACTORY: "0x6d30D80889117c8C45C3C6E62FC43Ef5df68CdF6" as const,
   REGISTRY: "0x000000000069E2a187AEFFb852bF3cCdC95151B2" as const,
   WEBAUTHN_VALIDATOR: "0x7ab16Ff354AcB328452F1D445b3Ddee9a91e9e69" as const,
-  WISE_MODULE: "0x4649bd3E76aC8B2cE8af7D60007571CdD47d4ABe" as const,
+  WISE_MODULE: "0xD52B2E3414a33CD287d7B7a17b781F20B3c4278f" as const,
 };
 
 /**
