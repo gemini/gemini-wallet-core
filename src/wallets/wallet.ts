@@ -384,22 +384,28 @@ export class GeminiWallet {
 
       const data = await response.json();
 
-      // Calculate legacy address and v3 address if status is useV1Contract or useV2Contract
+      const addressParams = {
+        credentialId: credential.id,
+        publicKey: credential.publicKey as `0x${string}`,
+      };
       let legacyAddress: Address | undefined;
       let v3Address: Address | undefined;
+
+      // calculate legacy address and v3 address if status is useV1Contract or useV2Contract
       if (data.status === WalletVersion.V1 || data.status === WalletVersion.V2) {
         try {
-          const addressParams = {
-            credentialId: credential.id,
-            publicKey: credential.publicKey as `0x${string}`,
-          };
           legacyAddress =
             data.status === WalletVersion.V1 ? calculateV1Address(addressParams) : calculateV2Address(addressParams);
-          // Calculate the V3 address for migration purposes (V3 only needs publicKey, not credentialId)
           v3Address = calculateV3Address({ publicKey: credential.publicKey as `0x${string}` });
         } catch (addressError) {
           console.warn("Failed to calculate wallet addresses:", addressError);
         }
+      }
+
+      // Calculate v2 and v3 address if status is useV3Contract
+      if (data.status === WalletVersion.V3) {
+        legacyAddress = calculateV2Address(addressParams);
+        v3Address = calculateV3Address({ publicKey: credential.publicKey as `0x${string}` });
       }
 
       return {
