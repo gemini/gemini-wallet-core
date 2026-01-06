@@ -291,8 +291,6 @@ Gemini Wallet supports the following networks:
 - `SDK_BACKEND_URL`: `"https://keys.gemini.com"`
 - `DEFAULT_CHAIN_ID`: `42161` (Arbitrum One)
 - `SUPPORTED_CHAIN_IDS`: Array of supported chain IDs
-- `POPUP_WIDTH`: `420`
-- `POPUP_HEIGHT`: `650`
 
 ## Security Considerations
 
