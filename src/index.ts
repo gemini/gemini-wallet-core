@@ -82,4 +82,4 @@ export {
 } from "./utils";
 
 // Constants
-export { DEFAULT_CHAIN_ID, POPUP_HEIGHT, POPUP_WIDTH, SDK_BACKEND_URL, SDK_VERSION } from "./constants";
+export { DEFAULT_CHAIN_ID, SDK_BACKEND_URL, SDK_VERSION } from "./constants";

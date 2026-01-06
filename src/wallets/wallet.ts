@@ -402,7 +402,7 @@ export class GeminiWallet {
         }
       }
 
-      // Calculate v2 and v3 address if status is useV3Contract
+      // calculate v2 and v3 address if status is useV3Contract
       if (data.status === WalletVersion.V3) {
         legacyAddress = calculateV2Address(addressParams);
         v3Address = calculateV3Address({ publicKey: credential.publicKey as `0x${string}` });

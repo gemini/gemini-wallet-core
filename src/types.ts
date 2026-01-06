@@ -203,9 +203,7 @@ export interface ReverseEnsResponse {
  * EIP-5792 Capability definition used in wallet_sendCalls requests
  */
 export interface Capability {
-  /** If true, the capability is optional and can be safely ignored if not supported */
   optional?: boolean;
-  /** Additional capability-specific properties */
   [key: string]: unknown;
 }
 
@@ -238,13 +236,23 @@ export type V3UpgradeStatus = "COMPLETE" | "NOT_SEEN" | "IN_PROGRESS";
 
 /**
  * Wallet status enum for migration tracking
+ * - useV1Contract: Wallet should use V1 contract
+ * - useV2Contract: Wallet should use V2 contract
+ * - useV3Contract: Wallet should use V3 contract
+ * - txsBlocked: Transactions are blocked for this wallet
+ * - manualMigrationNeeded: Manual migration required
+ * - isBeingAutoMigrated: Wallet is currently being auto-migrated
+ * - migrationCheckFailed: Failed to get status
  */
-export type WalletStatus =
-  | "useV1Contract"
-  | "useV2Contract"
-  | "txsBlocked"
-  | "manualMigrationNeeded"
-  | "isBeingAutoMigrated";
+export enum WalletStatus {
+  useV1Contract = "useV1Contract",
+  useV2Contract = "useV2Contract",
+  useV3Contract = "useV3Contract",
+  txsBlocked = "txsBlocked",
+  manualMigrationNeeded = "manualMigrationNeeded",
+  isBeingAutoMigrated = "isBeingAutoMigrated",
+  migrationCheckFailed = "migrationCheckFailed",
+}
 
 export interface WalletCapabilities {
   [chainId: string]: {

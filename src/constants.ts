@@ -61,7 +61,3 @@ export function getDefaultRpcUrl(chainId: number): string | undefined {
 
   return chainMap[chainId];
 }
-
-// Popup window dimensions
-export const POPUP_WIDTH = 420;
-export const POPUP_HEIGHT = 650;
