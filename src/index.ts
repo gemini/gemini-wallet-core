@@ -56,9 +56,8 @@ export type {
   SwitchChainResponse,
   V3UpgradeStatus,
   WalletCapabilities,
-  WalletStatus,
 } from "./types";
-export { GeminiSdkEvent, PlatformType, ProviderEventEmitter, WalletVersion } from "./types";
+export { GeminiSdkEvent, PlatformType, ProviderEventEmitter, WalletStatus, WalletVersion } from "./types";
 
 // Utility exports
 export type { CalculateV3WalletAddressParams, CalculateWalletAddressParams, WebAuthnValidatorData } from "./utils";
