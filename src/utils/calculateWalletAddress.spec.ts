@@ -53,6 +53,20 @@ describe("calculateWalletAddress", () => {
   });
 
   // V3 address tests (new, only uses publicKey)
+  test("should calculate exact V3 wallet address matching on-chain deployment", () => {
+    // From on-chain transaction: https://basescan.org/tx/...
+    // AccountCreated event shows: account=0x7828AE03e35deEfD84CeE18b2bDDFb61EF6F99c6
+    // WISE module event data contains pubKeyX and pubKeyY
+    const publicKey =
+      "0x3d8316ea7aed7af4027ad5b604f9f5ca0fef4c1adb190e2378a28187f6a0c80bd9f66d74d94184fb63ff4ee808f3a0472fae2a936ad1a103d67f86bfc3420f9b" as const;
+
+    const calculatedAddress = calculateV3Address({ publicKey });
+
+    const expectedAddress = "0x7828AE03e35deEfD84CeE18b2bDDFb61EF6F99c6";
+
+    expect(calculatedAddress.toLowerCase()).toBe(expectedAddress.toLowerCase());
+  });
+
   test("should calculate V3 wallet address (no credentialId)", () => {
     const publicKey =
       "0x900fb1e17b7766916a8dad6f8a26b3dbc4fe4f9b1ea5f2d20b7cb31e44c5ff54e63df1865b444a4e7b74a33ef8e3a269f77a6ba5afd072fc641ad5c7f9d626c7" as const;
