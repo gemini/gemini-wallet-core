@@ -54,15 +54,17 @@ describe("calculateWalletAddress", () => {
 
   // V3 address tests (new, only uses publicKey)
   test("should calculate exact V3 wallet address matching on-chain deployment", () => {
-    // From on-chain transaction: https://basescan.org/tx/...
-    // AccountCreated event shows: account=0x7828AE03e35deEfD84CeE18b2bDDFb61EF6F99c6
-    // WISE module event data contains pubKeyX and pubKeyY
+    // V3 uses HorizonSmartWalletV2Factory with WISE module + WebAuthn validators
+    // From on-chain transaction: https://arbiscan.io/tx/0xf899c6928e69376d4d2584c67939ddddc734540548ad081a987cc694671d0414
+    // AccountCreated event shows: account=0x731a20fd8592c13e1aad83fb17d3196648c1c525
+    // pubKeyX: 0x785bc435870ca94e83a44683c1039d49ee22f707354571a6d1286ef28f274ca3
+    // pubKeyY: 0x1d2b84a37d94ebd973b78baca3eb66003450cd056430fb25d6f54f3e9336f3ae
     const publicKey =
-      "0x3d8316ea7aed7af4027ad5b604f9f5ca0fef4c1adb190e2378a28187f6a0c80bd9f66d74d94184fb63ff4ee808f3a0472fae2a936ad1a103d67f86bfc3420f9b" as const;
+      "0x785bc435870ca94e83a44683c1039d49ee22f707354571a6d1286ef28f274ca31d2b84a37d94ebd973b78baca3eb66003450cd056430fb25d6f54f3e9336f3ae" as const;
 
     const calculatedAddress = calculateV3Address({ publicKey });
 
-    const expectedAddress = "0x7828AE03e35deEfD84CeE18b2bDDFb61EF6F99c6";
+    const expectedAddress = "0x731a20fd8592c13e1aad83fb17d3196648c1c525";
 
     expect(calculatedAddress.toLowerCase()).toBe(expectedAddress.toLowerCase());
   });

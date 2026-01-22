@@ -53,15 +53,15 @@ const V1_CONTRACT_ADDRESSES = {
 // NOTE: Naming discrepancy - "V2Factory" in contract naming corresponds to SDK "V3"
 // This is because the contract versioning started fresh while SDK versioning is cumulative
 // V3 uses simplified salt (pubKeyX + pubKeyY only, no authenticatorIdHash or index)
-// Uses Entry Point v0.8 temporarily
+// Uses Entry Point v0.9
 const V3_CONTRACT_ADDRESSES = {
-  ACCOUNT_IMPLEMENTATION: "0xb168498C538fF637Fbe23F7d6F89ce99741E3C8e" as const,
-  ATTESTER: "0xEA843967cd05549d977475889AF2fadaE78966FD" as const,
+  ACCOUNT_IMPLEMENTATION: "0x43525FC1d602E8d056091e943276823f2ba10090" as const,
+  ATTESTER: "0x0BdE98EC16d2FF2d5404322c4b9d862680e615F3" as const,
   BOOTSTRAPPER: "0x00000000D3254452a909E4eeD47455Af7E27C289" as const,
-  FACTORY: "0x6d30D80889117c8C45C3C6E62FC43Ef5df68CdF6" as const,
+  FACTORY: "0xad3c042f6Ab413c9B616379a6C7e205c8dE4Dc89" as const,
   REGISTRY: "0x000000000069E2a187AEFFb852bF3cCdC95151B2" as const,
   WEBAUTHN_VALIDATOR: "0x7ab16Ff354AcB328452F1D445b3Ddee9a91e9e69" as const,
-  WISE_MODULE: "0xD52B2E3414a33CD287d7B7a17b781F20B3c4278f" as const,
+  WISE_MODULE: "0x1fb9ACF067630d7892966d1F5B7F3249C508Cede" as const,
 };
 
 /**
