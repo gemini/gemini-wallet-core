@@ -43,25 +43,25 @@
     "eventemitter3": "5.0.1"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "3.3.1",
-    "@eslint/js": "9.38.0",
+    "@eslint/eslintrc": "3.3.3",
+    "@eslint/js": "9.39.2",
     "@types/node": "22.13.0",
     "dotenv-cli": "10.0.0",
     "esbuild-plugin-replace": "1.4.0",
-    "eslint": "9.38.0",
+    "eslint": "9.39.2",
     "eslint-config-prettier": "10.1.8",
-    "eslint-config-turbo": "2.5.6",
+    "eslint-config-turbo": "2.8.3",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-only-warn": "1.1.0",
-    "eslint-plugin-prettier": "5.5.4",
+    "eslint-plugin-prettier": "5.5.5",
     "eslint-plugin-simple-import-sort": "12.1.1",
     "eslint-plugin-sort-keys-fix": "1.1.2",
-    "globals": "16.4.0",
-    "prettier": "3.6.2",
-    "tsup": "8.5.0",
-    "typescript": "5.5.3",
-    "typescript-eslint": "8.40.0",
-    "vitest": "3.2.4"
+    "globals": "17.3.0",
+    "prettier": "3.8.1",
+    "tsup": "8.5.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.54.0",
+    "vitest": "4.0.18"
   },
   "peerDependencies": {
     "viem": ">=2.0.0"
